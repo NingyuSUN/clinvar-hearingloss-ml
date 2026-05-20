@@ -1,0 +1,16 @@
+name: hearingloss-variants
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - numpy
+  - pandas
+  - scikit-learn
+  - matplotlib
+  - pyyaml
+  - pip:
+      - xgboost==2.0.3
+      - shap==0.48.0
+      - numba>=0.59
