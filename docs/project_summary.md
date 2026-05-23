@@ -2,7 +2,7 @@
 
 This project studies hearing-loss-related variant pathogenicity prediction using ClinVar-derived features and biologically informed machine learning.
 
-The main research problem is whether a model can generalize to variants in genes that were not seen during training. This is important because ordinary random train/test splits can overestimate performance when variants from the same genes appear in both training and testing data.
+The main research problem is whether a model can generalize to variants in genes that were not seen or familiar with during training. This is important because ordinary random train/test splits can overestimate performance when variants from the same genes appear in both training and testing data.
 
 ## Core contribution
 
