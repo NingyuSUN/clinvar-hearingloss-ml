@@ -46,6 +46,15 @@ Ambiguous conservation gray zone -> structural features refine prediction
 
 In the approximate conservation gray zone, `ensembl_conservation` between -1 and 1, model decisions become more dependent on variant structure features such as deletion, stop-gain, splice-site signal, and variant length.
 
+### Full optimized biological feature model
+
+| Model | AUC | R90 Precision | R90 Recall |
+|---|---:|---:|---:|
+| Base Model | 0.827 ± 0.053 | 0.650 ± 0.146 | 0.904 ± 0.005 |
+| Base + LoF Constraint | 0.839 ± 0.041 | 0.762 ± 0.079 | 0.903 ± 0.003 |
+| Base + LoF + Missense + MAF + VEP | 0.856 ± 0.036 | 0.768 ± 0.089 | 0.901 ± 0.001 |
+
+The full optimized model improved AUC and maintained high recall while improving precision at the R90 operating point. This suggests that gene-level constraint, population frequency, and protein-domain context provide complementary biological information beyond conservation alone.
 ## Repository structure
 
 ```text
