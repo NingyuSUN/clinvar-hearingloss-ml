@@ -10,3 +10,6 @@ dependencies:
   - scipy>=1.11
   - pip:
       - xgboost>=2.0,<4
+      # optional, for scripts/run_shap.py only:
+      - shap>=0.44
+      - matplotlib>=3.7
