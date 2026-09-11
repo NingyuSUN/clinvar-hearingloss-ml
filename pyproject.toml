@@ -16,5 +16,8 @@ dependencies = [
   "xgboost>=2.0,<4",
 ]
 
+[project.optional-dependencies]
+interpret = ["shap>=0.44", "matplotlib>=3.7"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
