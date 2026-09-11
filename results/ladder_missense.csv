@@ -1,0 +1,16 @@
+feature_set,n_features,n_folds,auc_per_fold_mean,auc_per_fold_sd,best_iteration_median,R90_recall_mean,R90_precision_mean
+base_conservation_only,1,50,0.6661,0.153,19,0.7501,0.429
+base_consequence_only,4,50,0.5308,0.017,474,1.0,0.3169
+base_freq_only,4,50,0.7718,0.0863,10,0.934,0.4543
+L1_allele,4,50,0.5143,0.0071,698,0.9998,0.3168
+L2_base,5,50,0.6761,0.148,26,0.7877,0.4186
+L3_consequence,9,50,0.682,0.147,32,0.7796,0.4273
+L4_constraint,11,50,0.7073,0.136,673,0.7188,0.4259
+L5_frequency,15,50,0.8532,0.0396,10,0.8742,0.5525
+L6_full,18,50,0.8556,0.0375,10,0.8837,0.554
+F_minus_consequence,14,50,0.8563,0.0367,12,0.8833,0.5476
+F_minus_allele,14,50,0.8588,0.0349,12,0.8754,0.5587
+F_minus_conservation,17,50,0.8155,0.0656,11,0.9271,0.4851
+F_minus_constraint,16,50,0.8016,0.1051,10,0.8816,0.4956
+F_minus_frequency,14,50,0.7201,0.1424,663,0.7714,0.4441
+F_minus_domain,15,50,0.8514,0.0369,10,0.8709,0.5513

@@ -1,0 +1,85 @@
+{
+  "pooled_headline": {
+    "feature_set": "L6_full",
+    "n_variants": 7125,
+    "bootstrap_ci": {
+      "AUC": {
+        "mean": 0.9299749248163698,
+        "lo": 0.9243685018525738,
+        "hi": 0.9355795264964689
+      },
+      "R90_recall": {
+        "mean": 0.8450582297097781,
+        "lo": 0.8327758729695555,
+        "hi": 0.8575769939121093
+      },
+      "R90_precision": {
+        "mean": 0.8548148545529288,
+        "lo": 0.8432317178838745,
+        "hi": 0.866413518037718
+      }
+    },
+    "confusion": {
+      "TP": 3022,
+      "FP": 513,
+      "TN": 3036,
+      "FN": 554
+    }
+  },
+  "pooled_missense": {
+    "feature_set": "L6_full",
+    "n_variants": 3121,
+    "bootstrap_ci": {
+      "AUC": {
+        "mean": 0.8144373977516534,
+        "lo": 0.7994983193122956,
+        "hi": 0.8290871392141524
+      },
+      "R90_recall": {
+        "mean": 0.9098876332442346,
+        "lo": 0.8911693962376631,
+        "hi": 0.9272541232052282
+      },
+      "R90_precision": {
+        "mean": 0.5250858211647764,
+        "lo": 0.5017293200672448,
+        "hi": 0.5481862242062563
+      }
+    },
+    "confusion": {
+      "TP": 900,
+      "FP": 813,
+      "TN": 1319,
+      "FN": 89
+    }
+  },
+  "split_gap": {
+    "feature_set": "L6_full",
+    "gene_held_out_auc": 0.9301,
+    "random_split_auc": 0.9963,
+    "gap": 0.0662
+  },
+  "review_status_sensitivity": [
+    {
+      "cohort": "all_tier",
+      "n_variants": 7736,
+      "AUC_mean": 0.9301,
+      "AUC_lo": 0.9243,
+      "AUC_hi": 0.9355
+    },
+    {
+      "cohort": "ge1star_headline",
+      "n_variants": 7125,
+      "AUC_mean": 0.93,
+      "AUC_lo": 0.9244,
+      "AUC_hi": 0.9356
+    },
+    {
+      "cohort": "ge2star",
+      "n_variants": 3554,
+      "AUC_mean": 0.9666,
+      "AUC_lo": 0.9619,
+      "AUC_hi": 0.9711
+    }
+  ]
+}
