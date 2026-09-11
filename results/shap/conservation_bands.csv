@@ -1,0 +1,4 @@
+band,n,conservation_range,consequence,conservation,allele,frequency,domain,constraint
+low_conservation,1030,"[-8.86, -0.53]",0.0,19.3,0.4,50.4,3.0,26.7
+mid_conservation,1027,"[-0.53, 1.83]",0.1,16.6,0.4,51.5,3.0,28.5
+high_conservation,1064,"[1.84, 5.47]",0.1,19.2,0.2,48.2,2.3,30.0

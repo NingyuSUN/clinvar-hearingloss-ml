@@ -93,26 +93,37 @@ on the full cohort — so it is kept.
 
 Full tables: `docs/results.md` and `results/`.
 
+### Feature attribution agrees with the ablation
+
+TreeSHAP (exact, out-of-fold, on the same frozen models) ranks the missense
+feature groups the same way the ablation does — frequency > gene constraint >
+conservation > domain (Spearman rank correlation 0.94). Conservation's
+attribution shows a sharp threshold around a score of ~1–2, not a smooth
+gradient. See `docs/shap.md`.
+
 ## Repository layout
 
 ```text
 src/hlpath/
-  protocol.py    frozen label / cohort / gene-group / feature definitions
-  pipeline.py    balanced grouped CV, nested inner hold-out, training, R90
-  metrics.py     R90 threshold (with one-class guard), bootstrap CI, paired tests
-  analysis.py    ladder / stratified / split-gap tables
-  features.py    load the modelling matrix
-  config.py      paths, seeds, XGBoost params
+  protocol.py       frozen label / cohort / gene-group / feature definitions
+  pipeline.py       balanced grouped CV, nested inner hold-out, training, R90
+  metrics.py        R90 threshold (with one-class guard), bootstrap CI, paired tests
+  analysis.py       ladder / stratified / split-gap tables
+  shap_analysis.py  TreeSHAP attribution on the frozen model
+  features.py       load the modelling matrix
+  config.py         paths, seeds, XGBoost params
 scripts/
   run_evaluation.py    the full cross-validation run
   analyze_results.py   the reported tables
+  run_shap.py          TreeSHAP tables + figures
   build_matrix.py      regenerate the matrix from a raw annotated feature table
 data/
   modeling_matrix.csv.gz   per-variant features + label + gene group + cohort flags
 docs/
-  methods.md  data.md  results.md  limitations.md
+  methods.md  data.md  results.md  shap.md  limitations.md
 results/
   ladder_*.csv  stratified_headline.csv  split_gap ...  run_manifest.json
+  shap/  importance / group_importance / by_consequence / conservation_bands + figures/
 ```
 
 ## Reproduce

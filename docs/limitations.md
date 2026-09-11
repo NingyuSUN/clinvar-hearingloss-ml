@@ -25,6 +25,11 @@ pathogenicity", and the headline number should not be read as that.
 - Gene-level features (gene constraint) are constant within a gene. Under
   gene-held-out CV they still generalise to unseen genes, but they cannot
   distinguish variants within a gene.
+- The two gene-constraint features (`oe_lof_upper`, `oe_mis_upper`) are
+  correlated with each other (r = 0.62); their individual SHAP attribution
+  direction is not reliable (see `docs/shap.md`). Their *combined* importance is
+  well supported (agrees with the ablation), but no directional claim should be
+  made for either one alone without a dedicated analysis.
 
 ## The operating point
 

@@ -112,3 +112,11 @@ variants in each stratum recovered at the one global R90 threshold.)
 
 AUC is stable across the review-status cuts and only tightens as the labels get
 cleaner.
+
+## Feature attribution
+
+`docs/shap.md` has the full write-up. Headline result: TreeSHAP attribution on
+the fitted models ranks the missense feature groups in the same order as the
+ablation above (frequency > gene constraint > conservation > domain, Spearman
+0.94) — two independent methods agreeing on which features carry the missense
+signal.

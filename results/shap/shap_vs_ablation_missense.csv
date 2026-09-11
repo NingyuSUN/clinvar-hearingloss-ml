@@ -1,0 +1,7 @@
+group,ablation_deltaAUC_removed,ablation_rank,shap_share_pct,shap_rank
+frequency,-0.136,1,49.9,1
+constraint,-0.054,2,28.6,2
+conservation,-0.04,3,18.4,3
+domain,-0.004,4,2.7,4
+consequence,0.001,5,0.1,6
+allele,0.003,6,0.3,5
