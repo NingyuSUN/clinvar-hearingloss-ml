@@ -1,9 +1,12 @@
 # Notebooks
 
-The uploaded materials were Colab-exported Python scripts rather than `.ipynb` notebooks. The original exports are preserved under:
+There are no notebooks in this repository. The analysis is a small set of runnable
+scripts (`scripts/`) over a reusable package (`src/hlpath/`):
 
-```text
-archive/original_colab_exports/
+```bash
+python scripts/run_evaluation.py --out results/
+python scripts/analyze_results.py --dir results/
 ```
 
-For GitHub, the recommended workflow is to keep cleaned, runnable scripts in `scripts/` and reusable logic in `src/hlpath/`. If needed, these scripts can later be converted back into notebooks for teaching or presentation.
+The frozen protocol is `src/hlpath/protocol.py`; the cross-validation is
+`src/hlpath/pipeline.py`. See `docs/methods.md`.

@@ -1,219 +1,169 @@
-# Hearing Loss Variant Pathogenicity Prediction
+# Hearing-loss variant pathogenicity — gene-held-out evaluation
 
-Machine learning project for predicting pathogenicity of hearing-loss-related variants using ClinVar-derived features, evolutionary conservation, strict gene-based validation, and SHAP explainability.
+A machine-learning study of ClinVar hearing-loss variants. The question is not
+"how high can the AUC go" but **how much of a pathogenicity model's apparent
+performance survives when the test genes are genuinely unseen**, and where the
+signal actually comes from.
 
-> **Status:** ongoing research / portfolio project. This repository is not a clinical diagnostic tool.
+> Research / portfolio project. Not a clinical diagnostic tool.
 
-## Highlights
+## What this project does
 
-- Diagnosed why ordinary random splits can overestimate variant pathogenicity models.
-- Re-evaluated performance using **gene-based splits**, where genes in the test set are unseen during training.
-- Added **evolutionary conservation** as a cross-gene biological feature.
-- Evaluated models with both AUC and a clinically motivated **R90** operating point: recall >= 0.90.
-- Used SHAP to interpret global feature importance, conservation gray zones, subgroup behavior, and representative model errors.
+- Builds a per-variant feature table from ClinVar, Ensembl VEP consequence terms,
+  gnomAD allele frequency and gene constraint, protein-domain membership, and an
+  evolutionary conservation score.
+- **Freezes** the label rule, the cohort, the gene-group split, the operating
+  point, and the feature list *before any model is trained* (`docs/methods.md`).
+- Evaluates an XGBoost classifier with **grouped 5-fold cross-validation on gene
+  groups** (connected components of gene co-occurrence), a nested gene-group
+  hold-out for iteration and threshold selection, and 10 frozen seeds.
+- Reports an additive feature ablation with **paired per-fold tests**, a
+  **patient-level bootstrap CI** on the pooled out-of-fold predictions, and a
+  **consequence-stratified** breakdown.
 
-## Results
+## Headline results
 
-### 1. Random split vs gene-based split
+Headline cohort: 7,125 variants (feature-complete, ClinVar review status ≥ 1 star),
+167 gene groups, roughly balanced labels.
 
-Random split produced stronger apparent performance than gene-based split, suggesting that random split may partly reward gene-associated shortcut learning.
+| Model (18 features) | AUC | 95% CI |
+|---|---:|---:|
+| Full model, gene-held-out | **0.930** | 0.924 – 0.936 |
+| Full model, ordinary random split | 0.996 | 0.995 – 0.997 |
 
-| Evaluation setting | AUC |
-|---|---:|
-| Random split | 0.878 |
-| Gene-based split | 0.723 |
+A random split lets the model recognise the gene and inflates AUC by ~0.07. Every
+number below is gene-held-out.
 
-### 2. Effect of conservation under strict gene-based evaluation
+### The cohort is mostly decided by consequence type
 
-Adding `ensembl_conservation` improved unseen-gene generalization and reduced false positives under the R90 setting.
+In a hearing-loss gene panel, loss-of-function is near-deterministic for
+pathogenicity (ACMG `PVS1`). That shows up as near-perfect separation before any
+model runs:
 
-| Model | AUC | R90 FN | R90 FP | R90 Recall | R90 Precision |
-|---|---:|---:|---:|---:|---:|
-| Baseline, no conservation | 0.653 | 1 | 664 | 0.998 | 0.449 |
-| + Conservation | 0.812 | 54 | 394 | 0.900 | 0.553 |
-| Delta | +0.159 | +53 | -270 | -0.098 | +0.104 |
+| Consequence class | Variants | Pathogenic |
+|---|---:|---:|
+| Truncating (frameshift / stop) | 1,952 | 99.9 % |
+| Canonical splice | 563 | 99.6 % |
+| Non-coding / other | 1,489 | 5.1 % |
+| **Coding non-truncating (missense)** | **3,121** | **31.7 %** |
 
-`R90` means the threshold is selected under the constraint that recall is at least 0.90, then FN, FP, and precision are evaluated at that threshold.
+Roughly 35 % of the cohort is one class. A model using only the four consequence
+flags already scores **AUC 0.85** on the full cohort. The full-cohort 0.93 is
+mostly loss-of-function identification.
 
-### 3. SHAP interpretation
+### On the genuine problem — missense — the model is weaker
 
-The SHAP analyses suggest a hierarchical decision pattern:
-
-```text
-Strong conservation signal       -> conservation-dominated prediction
-Ambiguous conservation gray zone -> structural features refine prediction
-```
-
-In the approximate conservation gray zone, `ensembl_conservation` between -1 and 1, model decisions become more dependent on variant structure features such as deletion, stop-gain, splice-site signal, and variant length.
-
-### Full optimized biological feature model
-
-| Model | AUC | R90 Precision | R90 Recall |
+| Missense subset (N = 3,121) | AUC | 95% CI | R90 precision |
 |---|---:|---:|---:|
-| Base Model | 0.827 ± 0.053 | 0.650 ± 0.146 | 0.904 ± 0.005 |
-| Base + LoF Constraint | 0.839 ± 0.041 | 0.762 ± 0.079 | 0.903 ± 0.003 |
-| Base + LoF + Missense + MAF + VEP | 0.856 ± 0.036 | 0.768 ± 0.089 | 0.901 ± 0.001 |
+| Full model | **0.814** | 0.800 – 0.829 | 0.53 |
+| Frequency only | 0.772 | — | — |
 
-The full optimized model improved AUC and maintained high recall while improving precision at the R90 operating point. This suggests that gene-level constraint, population frequency, and protein-domain context provide complementary biological information beyond conservation alone.
-## Repository structure
+Allele frequency is the dominant feature here (removing it costs 0.136 AUC), and
+frequency also feeds ClinVar's own benign calls through `BA1` / `BS1`, so part of
+that signal is the model re-deriving the labelling rule.
 
-```text
-.
-├── README.md
-├── requirements.txt
-├── environment.yml
-├── pyproject.toml
-├── src/hlpath/
-│   ├── clinvar.py           # ClinVar download, filtering, labeling
-│   ├── data.py              # loading and feature engineering
-│   ├── metrics.py           # AUC, confusion matrix, R90 metrics
-│   ├── modeling.py          # XGBoost training and evaluation
-│   ├── heterogeneity.py     # subgroup and conservation-bin analyses
-│   └── shap_analysis.py     # SHAP plotting utilities
-├── scripts/
-│   ├── 00_download_prepare_clinvar.py
-│   ├── 01_initial_random_forest_baseline.py
-│   ├── 01_diagnose_random_vs_gene_split.py
-│   ├── 02_evaluate_conservation.py
-│   ├── 03_heterogeneity_analysis.py
-│   └── 04_shap_explainability.py
-├── docs/
-│   ├── data_source.md
-│   ├── project_summary.md
-│   ├── methods.md
-│   ├── results_summary.md
-│   └── code_inventory.md
-├── data/
-│   ├── raw/
-│   └── processed/
-├── results/
-│   ├── figures/
-│   └── tables/
-└── archive/original_colab_exports/
-```
+### The R90 operating point hides the missense gap
 
-The `archive/` folder preserves the original Colab-exported scripts. The cleaned and reusable code is in `src/hlpath/` and `scripts/`.
+The threshold is chosen for recall ≥ 0.90 on the validation set. At that single
+global threshold:
 
-## Data source
+| Consequence class | Recall |
+|---|---:|
+| Truncating | 99.7 % |
+| Canonical splice | 96.6 % |
+| **Missense** | **53.0 %** |
+| Non-coding / other | 15.8 % |
 
-This project starts from the public NCBI ClinVar tab-delimited file:
+A headline "90 % recall" is carried by the trivial classes; about one in two
+missense pathogenic variants is missed.
+
+### Feature ablation (paired per-fold, full cohort → missense)
+
+| Add to Base | Full cohort ΔAUC | Missense ΔAUC |
+|---|---:|---:|
+| consequence flags | **+0.128** (t 23.7) | +0.006 (t 3.9) |
+| gene constraint | +0.001 (ns) | +0.025 (ns) |
+| allele frequency | +0.020 (t 3.1) | **+0.146** (t 8.0) |
+| protein domain | +0.004 (t 4.4) | +0.002 (ns) |
+
+Consequence type carries the full cohort; frequency carries missense.
+Under leave-one-group-out from the full model, **gene constraint is the second
+most important feature for missense** (−0.054, t −4.0) even though it adds nothing
+on the full cohort — so it is kept.
+
+Full tables: `docs/results.md` and `results/`.
+
+## Repository layout
 
 ```text
-https://ftp.ncbi.nlm.nih.gov/pub/clinvar/tab_delimited/variant_summary.txt.gz
+src/hlpath/
+  protocol.py    frozen label / cohort / gene-group / feature definitions
+  pipeline.py    balanced grouped CV, nested inner hold-out, training, R90
+  metrics.py     R90 threshold (with one-class guard), bootstrap CI, paired tests
+  analysis.py    ladder / stratified / split-gap tables
+  features.py    load the modelling matrix
+  config.py      paths, seeds, XGBoost params
+scripts/
+  run_evaluation.py    the full cross-validation run
+  analyze_results.py   the reported tables
+  build_matrix.py      regenerate the matrix from a raw annotated feature table
+data/
+  modeling_matrix.csv.gz   per-variant features + label + gene group + cohort flags
+docs/
+  methods.md  data.md  results.md  limitations.md
+results/
+  ladder_*.csv  stratified_headline.csv  split_gap ...  run_manifest.json
 ```
 
-The data preparation script filters hearing-loss-related rows using MedGen ID `C0018784` in `PhenotypeIDS` or the phrase `hearing loss` in `PhenotypeList`. ClinVar `ClinicalSignificance` is converted into a binary label: pathogenic/likely pathogenic = 1, benign/likely benign = 0, and uncertain/conflicting labels are removed.
-
-Generate the initial clean tables with:
-
-```bash
-python scripts/00_download_prepare_clinvar.py
-```
-
-This creates:
-
-```text
-data/raw/variant_summary.txt.gz
-data/raw/hearing_loss_clinvar_clean.csv
-data/processed/hearing_loss_df_clean.csv
-data/processed/hearing_loss_grch38.csv
-data/processed/hearing_loss_X.parquet
-data/processed/hearing_loss_y.npy
-```
-
-See `docs/data_source.md` for details.
-
-## Input data for model experiments
-
-Expected local files:
-
-```text
-data/processed/hearing_loss_df_clean.csv
-data/processed/hearing_loss_grch38_ensembl_conservation.csv
-```
-
-Large data files are intentionally not tracked. Place local CSV files under `data/raw/` or `data/processed/` before running the scripts.
-
-Minimum required columns:
-
-```text
-label
-GeneSymbol
-Name or hgvs
-Start
-Stop
-ensembl_conservation  # required for conservation and SHAP experiments
-```
-
-## Run analysis
-
-Install:
+## Reproduce
 
 ```bash
 conda env create -f environment.yml
 conda activate hearingloss-variants
 pip install -e .
+
+python scripts/run_evaluation.py --out results/
+python scripts/analyze_results.py --dir results/
 ```
 
-Prepare ClinVar hearing-loss data:
+`run_evaluation.py` reads `data/modeling_matrix.csv.gz` (override with
+`HLPATH_DATA`). The fold assignments are a deterministic function of the 10 frozen
+seeds in `src/hlpath/config.py`. To rebuild the matrix from raw annotations, see
+`docs/data.md` and `scripts/build_matrix.py`.
 
-```bash
-python scripts/00_download_prepare_clinvar.py
-```
+## Methods in brief
 
-Run the initial Random Forest random-split baseline:
-
-```bash
-python scripts/01_initial_random_forest_baseline.py \
-  --x data/processed/hearing_loss_X.parquet \
-  --y data/processed/hearing_loss_y.npy \
-  --out results/tables/initial_random_forest_baseline.csv
-```
-
-Diagnose random split vs gene-based split:
-
-```bash
-python scripts/01_diagnose_random_vs_gene_split.py \
-  --data data/processed/hearing_loss_df_clean.csv \
-  --out results/tables/random_vs_gene_split.csv
-```
-
-Evaluate baseline vs conservation:
-
-```bash
-python scripts/02_evaluate_conservation.py \
-  --data data/processed/hearing_loss_grch38_ensembl_conservation.csv \
-  --out results/tables/conservation_gene_split_results.csv
-```
-
-Run heterogeneity analysis:
-
-```bash
-python scripts/03_heterogeneity_analysis.py \
-  --data data/processed/hearing_loss_grch38_ensembl_conservation.csv \
-  --outdir results/tables
-```
-
-Generate SHAP figures:
-
-```bash
-python scripts/04_shap_explainability.py \
-  --data data/processed/hearing_loss_grch38_ensembl_conservation.csv \
-  --figdir results/figures
-```
-
-## Methods summary
-
-- **Model:** XGBoost binary classifier.
-- **Features:** variant length, deletion/insertion/duplication flags, frameshift flag, stop-gain flag, splice-site flag, evolutionary conservation.
-- **Validation:** gene-based train/test split; test genes are excluded from training.
-- **Early stopping:** validation split is created only from training genes.
-- **Metrics:** AUC and R90 threshold analysis.
-- **Interpretability:** SHAP global summary, dependence plots, gray-zone SHAP, subgroup SHAP, and local error explanation.
+- **Label** — ClinVar aggregate `ClinicalSignificance`: P/LP → 1, B/LB → 0,
+  "Likely" kept, VUS / Conflicting excluded. (Not `ClinSigSimple`.)
+- **Cohort** — feature-complete gate (reliable consequence, present gene
+  constraint, definitive frequency status, coding call made, conservation present,
+  single gene, label present) ∩ review status ≥ 1 star. All-tier and ≥ 2-star
+  cohorts are reported as sensitivity analyses.
+- **Split** — gene groups are connected components of `GeneSymbol` co-occurrence;
+  a whole component is held out together. Outer grouped 5-fold, folds balanced on
+  row count and label prevalence. Inner: a balanced gene-group hold-out for
+  iteration selection and the R90 threshold.
+- **Model** — XGBoost (`eta` 0.03, depth 5), trained to a 700-round cap with no
+  in-loop early stopping; the best iteration is the argmin of the
+  inner-validation log-loss curve. The R90 threshold is frozen on the inner
+  validation and applied to the outer test with the same fitted model.
+- **Statistics** — the mean ± SD across overlapping folds is not a confidence
+  interval; a patient-level bootstrap on the pooled predictions is used instead,
+  and ladder steps use paired per-fold differences.
 
 ## Limitations
 
-- ClinVar labels can include uncertainty, submitter bias, and historical inconsistency.
-- Conservation and gene constraint are informative features, not causal proof.
-- Current feature engineering is coarse; future work should add transcript context, protein domains, NMD prediction, allele frequency, and tissue expression.
-- Results are preliminary and intended for research/portfolio presentation.
+See `docs/limitations.md`. In short: excluding VUS / Conflicting makes an easier,
+selected task; consequence type near-determines the label for a third of the
+cohort; allele frequency is partly circular with the ClinVar labels; the
+conservation feature's provenance and the ClinVar phenotype-condition mapping are
+not fully audited.
+
+## Data sources
+
+- NCBI ClinVar `variant_summary.txt.gz` (public domain).
+- Ensembl VEP (REST, GRCh38) — consequence terms, canonical / MANE transcripts,
+  protein-domain overlaps.
+- gnomAD v4.1.1 — allele frequency (PASS); gnomAD v2.1.1 — gene constraint
+  (`oe_lof` / `oe_mis` upper bound).
+- Ensembl comparative-genomics conservation score.

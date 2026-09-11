@@ -1,0 +1,4 @@
+cohort,n_variants,AUC_mean,AUC_lo,AUC_hi
+all_tier,7736,0.9301,0.9243,0.9355
+ge1star_headline,7125,0.93,0.9244,0.9356
+ge2star,3554,0.9666,0.9619,0.9711

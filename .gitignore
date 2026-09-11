@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+.ipynb_checkpoints/
+.DS_Store
+
+# re-run artifacts (the frozen reference set is tracked; per-fold dumps are not)
+/results/per_fold_*.csv
+/results/oof_*.csv
+/results/analysis_summary.json
+# keep the compressed matrix, not an uncompressed local copy
+/data/modeling_matrix.csv
