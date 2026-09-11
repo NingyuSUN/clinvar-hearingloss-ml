@@ -1,5 +1,7 @@
 # Hearing-loss variant pathogenicity — gene-held-out evaluation
 
+> **Stratification correction (2026-09-11):** The historical 3,121-row `coding_nontruncating` subset includes 1,329 missense, 1,733 synonymous and 59 other coding variants. Its AUC 0.814, R90, ablation and SHAP results are **not strict-missense results**. Historical filenames containing `missense` are retained for reproducibility. See [stratification details](docs/stratification.md).
+
 A machine-learning study of ClinVar hearing-loss variants. The question is not
 "how high can the AUC go" but **how much of a pathogenicity model's apparent
 performance survives when the test genes are genuinely unseen**, and where the
@@ -18,7 +20,7 @@ signal actually comes from.
   groups** (connected components of gene co-occurrence), a nested gene-group
   hold-out for iteration and threshold selection, and 10 frozen seeds.
 - Reports an additive feature ablation with **paired per-fold tests**, a
-  **patient-level bootstrap CI** on the pooled out-of-fold predictions, and a
+  **variant-level bootstrap CI** on the pooled out-of-fold predictions, and a
   **consequence-stratified** breakdown.
 
 ## Headline results
@@ -45,15 +47,15 @@ model runs:
 | Truncating (frameshift / stop) | 1,952 | 99.9 % |
 | Canonical splice | 563 | 99.6 % |
 | Non-coding / other | 1,489 | 5.1 % |
-| **Coding non-truncating (missense)** | **3,121** | **31.7 %** |
+| **Coding non-truncating (mixed)** | **3,121** | **31.7 %** |
 
 Roughly 35 % of the cohort is one class. A model using only the four consequence
 flags already scores **AUC 0.85** on the full cohort. The full-cohort 0.93 is
 mostly loss-of-function identification.
 
-### On the genuine problem — missense — the model is weaker
+### Performance in the coding non-truncating subset
 
-| Missense subset (N = 3,121) | AUC | 95% CI | R90 precision |
+| Coding non-truncating subset (N = 3,121) | AUC | 95% CI | R90 precision |
 |---|---:|---:|---:|
 | Full model | **0.814** | 0.800 – 0.829 | 0.53 |
 | Frequency only | 0.772 | — | — |
@@ -62,7 +64,7 @@ Allele frequency is the dominant feature here (removing it costs 0.136 AUC), and
 frequency also feeds ClinVar's own benign calls through `BA1` / `BS1`, so part of
 that signal is the model re-deriving the labelling rule.
 
-### The R90 operating point hides the missense gap
+### The R90 operating point hides the coding non-truncating gap
 
 The threshold is chosen for recall ≥ 0.90 on the validation set. At that single
 global threshold:
@@ -71,31 +73,31 @@ global threshold:
 |---|---:|
 | Truncating | 99.7 % |
 | Canonical splice | 96.6 % |
-| **Missense** | **53.0 %** |
+| **coding non-truncating** | **53.0 %** |
 | Non-coding / other | 15.8 % |
 
 A headline "90 % recall" is carried by the trivial classes; about one in two
-missense pathogenic variants is missed.
+coding non-truncating pathogenic variants is missed.
 
-### Feature ablation (paired per-fold, full cohort → missense)
+### Feature ablation (paired per-fold, full cohort → coding non-truncating)
 
-| Add to Base | Full cohort ΔAUC | Missense ΔAUC |
+| Add to Base | Full cohort ΔAUC | Coding non-truncating ΔAUC |
 |---|---:|---:|
 | consequence flags | **+0.128** (t 23.7) | +0.006 (t 3.9) |
 | gene constraint | +0.001 (ns) | +0.025 (ns) |
 | allele frequency | +0.020 (t 3.1) | **+0.146** (t 8.0) |
 | protein domain | +0.004 (t 4.4) | +0.002 (ns) |
 
-Consequence type carries the full cohort; frequency carries missense.
+Consequence type carries the full cohort; frequency carries coding non-truncating.
 Under leave-one-group-out from the full model, **gene constraint is the second
-most important feature for missense** (−0.054, t −4.0) even though it adds nothing
+most important feature for coding non-truncating** (−0.054, t −4.0) even though it adds nothing
 on the full cohort — so it is kept.
 
 Full tables: `docs/results.md` and `results/`.
 
 ### Feature attribution agrees with the ablation
 
-TreeSHAP (exact, out-of-fold, on the same frozen models) ranks the missense
+TreeSHAP (exact, out-of-fold, on the same frozen models) ranks the coding non-truncating
 feature groups the same way the ablation does — frequency > gene constraint >
 conservation > domain (Spearman rank correlation 0.94). Conservation's
 attribution shows a sharp threshold around a score of ~1–2, not a smooth
@@ -159,7 +161,7 @@ seeds in `src/hlpath/config.py`. To rebuild the matrix from raw annotations, see
   inner-validation log-loss curve. The R90 threshold is frozen on the inner
   validation and applied to the outer test with the same fitted model.
 - **Statistics** — the mean ± SD across overlapping folds is not a confidence
-  interval; a patient-level bootstrap on the pooled predictions is used instead,
+  interval; a variant-level bootstrap on the pooled predictions is used instead,
   and ladder steps use paired per-fold differences.
 
 ## Limitations
