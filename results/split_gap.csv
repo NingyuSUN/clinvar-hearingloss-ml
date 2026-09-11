@@ -1,0 +1,2 @@
+feature_set,gene_held_out_auc,random_split_auc,gap
+L6_full,0.9301,0.9963,0.0662

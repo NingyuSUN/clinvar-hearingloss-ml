@@ -1,0 +1,5 @@
+consequence_class,n,prevalence,auc,R90_recall,R90_precision
+canonical_splice,563,0.996,0.6524,0.966,0.998
+coding_nontruncating,3121,0.317,0.7777,0.53,0.567
+noncoding_or_other,1489,0.051,0.8333,0.158,0.098
+truncating,1952,0.999,0.6762,0.997,0.999
