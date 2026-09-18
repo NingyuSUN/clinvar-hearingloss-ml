@@ -141,7 +141,7 @@ part about the conservation feature using a documented substitute source.
 ```text
 LICENSE  CITATION.cff  MODEL_CARD.md  PROJECT_STATUS.md  CHANGELOG.md
 .github/workflows/ci.yml   CI: tests + public-artifact validation, no retraining
-Makefile                    test / validate / syntax targets
+Makefile                    test / validate / syntax / predict-test / predict-demo targets
 tools/validate_public_artifacts.py   dependency-free checks on results/ + docs/
 tests/                       pytest wrapper around the validator
 src/hlpath/
@@ -186,9 +186,11 @@ To check the repository itself (fast, no retraining, no data required beyond
 what's already committed):
 
 ```bash
-make test      # pytest: JSON/CSV well-formedness, no CRLF regressions
-make validate  # same checks, standalone script (what CI runs)
-make syntax    # ast-parse every tracked .py file
+make test          # pytest: JSON/CSV well-formedness, no CRLF regressions
+make validate      # same checks, standalone script (what CI runs)
+make syntax        # ast-parse every tracked .py file
+make predict-demo  # run predict_variants.py + render a report end to end
+make predict-test  # pytest against predict/bundle (needs predict/requirements-inference.txt)
 ```
 
 `run_evaluation.py` reads `data/modeling_matrix.csv.gz` (override with
@@ -232,3 +234,8 @@ not fully audited.
 - gnomAD v4.1.1 — allele frequency (PASS); gnomAD v2.1.1 — gene constraint
   (`oe_lof` / `oe_mis` upper bound).
 - Ensembl comparative-genomics conservation score.
+
+`predict/predict_novel.py` additionally uses `songlab/gpn-star-scores`
+(Hugging Face), the AlphaGenome API, and UCSC phyloP — see
+[`docs/predict_novel.md`](docs/predict_novel.md) for that list and why it
+differs from the training data sources above.
