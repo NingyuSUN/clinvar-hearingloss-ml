@@ -102,7 +102,7 @@ also removes each group from the full model (`FEATURE_SETS` in `protocol.py`).
 
 - The mean ± SD across the 50 (10 seeds × 5 folds) values is **not** a confidence
   interval — the training sets overlap heavily (Nadeau & Bengio 2003). A
-  **variant-level bootstrap** (2,000 resamples of the variants) on the pooled
+  **patient-level bootstrap** (2,000 resamples of the variants) on the pooled
   out-of-fold predictions is used for CIs.
 - Ladder steps are compared with a **paired per-fold difference** and its
   paired-t statistic, not by comparing a mean delta to the marginal SD.
