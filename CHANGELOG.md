@@ -1,5 +1,46 @@
 # Changelog
 
+## 2026-09-18 — Add live annotation for genuinely novel variants (`predict_novel.py`)
+
+- Added `predict/live_sources.py` and `predict/predict_novel.py`: a second
+  entry point that annotates a variant **not** in `predict/bundle`'s frozen
+  cache by calling live sources at request time — Ensembl VEP REST (consequence,
+  gene, protein-domain overlap), gnomAD v4.1.1 GraphQL (allele frequency),
+  gnomAD v2.1.1 via gnomAD's own API (gene constraint), a remote Hugging
+  Face-hosted Parquet lookup against `songlab/gpn-star-scores` for all three
+  GPN checkpoints (no local model or GPU — GPN-Star is a precomputed public
+  dataset), and optionally the AlphaGenome API (the user's own key) for
+  `avi`/`splice_sites`. Scoring reuses `prediction_core.py`'s existing
+  building blocks (`extract_features`, `select_fold`, `prediction_set`,
+  `Bundle.model`) without touching or weakening its hash-verified,
+  cache-only `predict_batch` path, which stays exactly as it was.
+- **Verified against the frozen cache before shipping**: every one of VEP's
+  transcript selection, the domain-curation count, the allele frequency, the
+  gene-constraint values, and all three GPN scores reproduced a known cached
+  variant's values exactly (tested against two variants of different
+  consequence classes and genes). The one deliberate exception is
+  `ensembl_conservation`, which uses UCSC phyloP (100-way) via UCSC's public
+  REST API as a documented substitute — see "Known gaps" below and
+  `docs/predict_novel.md`.
+- Added `docs/predict_novel.md` (the tutorial), `predict/requirements-novel.txt`,
+  and `tests/test_predict_novel.py` (real network calls against live services,
+  skipped by default; opt in with `RUN_NETWORK_TESTS=1`, not part of required
+  CI since external-service flakiness shouldn't block this repository's own
+  checks).
+- Updated `README.md`, `MODEL_CARD.md` and `PROJECT_STATUS.md`, including
+  correcting `MODEL_CARD.md`'s previous "not a novel-variant annotation
+  service" line, which this change makes no longer fully accurate — replaced
+  with an explanation of the two entry points' very different guarantees.
+- **Known gaps, stated rather than hidden**: this path has had no external
+  validation of its own; `ensembl_conservation`'s live substitute is on a
+  different scale from the original (unaudited) training-data source, so
+  `ORIGINAL18`/`ORIGINAL18_GPN`/`FULL_UNIFIED`/`FULL_STRATIFIED` scores for a
+  novel variant will differ somewhat from what an identical cached variant
+  would have shown; the frozen pipeline's VEP "target-gene" transcript
+  preference tier is not reproduced (the underlying gene-panel list wasn't
+  preserved anywhere this repository could find); and this path needs live
+  network access, unlike `predict_variants.py`.
+
 ## 2026-09-18 — Add downloadable five-model prediction CLI (`predict/`)
 
 - Added `predict/`: a CLI (`predict_variants.py` + `prediction_core.py`) that

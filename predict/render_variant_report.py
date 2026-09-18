@@ -96,7 +96,18 @@ STATUS_EXPLANATIONS = {
     "single gene-group.",
     "unsupported_group_mapping": "This variant's genes span more than one historical gene-group, or mix "
     "known and unrepresented genes.",
+    "live_annotated_v1": "Scored using predict_novel.py's live annotation pipeline (Ensembl VEP, gnomAD, "
+    "a public GPN-Star lookup, optionally AlphaGenome), not the frozen verified cache. This path has had "
+    "no independent external validation and substitutes a different conservation source than the one the "
+    "models were trained on — see docs/predict_novel.md before trusting this variant's scores.",
 }
+
+MODEL_STATUS_EXPLANATIONS = {
+    "missing_or_invalid_features": "This model needs a feature that wasn't available for this variant "
+    "(commonly avi/splice_sites when no AlphaGenome API key was given) — see `reasons` in predictions.jsonl.",
+    "not_scored": "Not scored.",
+}
+MODEL_STATUS_EXPLANATIONS.update(STATUS_EXPLANATIONS)
 
 DECISION_EXPLANATIONS = {
     "higher_risk_support": "Research support for the higher-risk (pathogenic-leaning) class at this model's frozen 5% threshold.",
@@ -189,13 +200,17 @@ def render_variant(record: dict) -> str:
     lines.append("### What each decision means for this variant")
     for name in MODEL_ORDER:
         m = models.get(name, {})
-        if m.get("status") != "scored_research":
-            continue
-        decision = m.get("research_decision")
-        explanation = DECISION_EXPLANATIONS.get(decision, decision)
-        imputed = m.get("imputed_features") or []
-        extra = f" (imputed features: {', '.join(imputed)})" if imputed else ""
-        lines.append(f"- **{MODEL_INFO[name]['label']}**: {explanation}{extra}")
+        if m.get("status") == "scored_research":
+            decision = m.get("research_decision")
+            explanation = DECISION_EXPLANATIONS.get(decision, decision)
+            imputed = m.get("imputed_features") or []
+            extra = f" (imputed features: {', '.join(imputed)})" if imputed else ""
+            lines.append(f"- **{MODEL_INFO[name]['label']}**: {explanation}{extra}")
+        elif m.get("status"):
+            reason = MODEL_STATUS_EXPLANATIONS.get(m["status"], m["status"])
+            reasons = m.get("reasons") or []
+            extra = f" ({', '.join(reasons)})" if reasons else ""
+            lines.append(f"- **{MODEL_INFO[name]['label']}**: not scored — {reason}{extra}")
     lines.append("")
     return "\n".join(lines)
 
@@ -217,8 +232,11 @@ def main():
     header = (
         "# Variant prediction report\n\n"
         "> Research tool. Scores are uncalibrated and not probabilities of "
-        "pathogenicity. Only variants already in the frozen verified cache can "
-        "be scored — see `docs/predict.md` and `MODEL_CARD.md`.\n\n"
+        "pathogenicity. `predict_variants.py` only scores variants already in "
+        "the frozen verified cache; `predict_novel.py` can score others but is "
+        "far less verified — check this report's `Annotation status` per "
+        "variant. See `docs/predict.md`, `docs/predict_novel.md` and "
+        "`MODEL_CARD.md`.\n\n"
     )
     body = "\n---\n\n".join(render_variant(r) for r in records)
     text = header + body + "\n"

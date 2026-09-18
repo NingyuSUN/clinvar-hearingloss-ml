@@ -17,10 +17,18 @@ This is a research/portfolio project, not a validated clinical tool. See
 A second, separate deliverable lives in `predict/`: a downloadable CLI that
 scores a variant against **five** related models (18 features only, GPN only,
 18+GPN, and two 18+GPN+AVI variants) and renders a plain-language report. It
-reuses this same frozen gene-held-out protocol for routing, but see
-`docs/predict.md` for its own, narrower scope — most importantly, **it only
-scores variants already in a shipped frozen annotation cache**, not an
-arbitrary novel variant.
+reuses this same frozen gene-held-out protocol for routing. There are two
+distinct entry points with very different guarantees:
+
+- `predict_variants.py` — only scores variants already in a shipped,
+  hash-verified frozen annotation cache (`docs/predict.md`).
+- `predict_novel.py` — annotates a genuinely new variant **live**, by calling
+  Ensembl VEP, gnomAD, a public GPN-Star lookup, and optionally the
+  AlphaGenome API with your own key, then scores it the same way
+  (`docs/predict_novel.md`). This path is much less verified than the
+  cache-only one: it has had no external validation, one feature
+  (conservation) uses a documented substitute source rather than the
+  original, and it needs live network access.
 
 ## Intended use
 
@@ -47,11 +55,14 @@ arbitrary novel variant.
   `README.md` it hides a large per-consequence-class gap (missense recall
   ~53% vs. truncating recall ~99.7%) and must not be read as a uniform
   90%-recall guarantee across variant classes.
-- **Not a novel-variant annotation service.** `predict/` cannot and does not
-  score a variant that isn't already in its frozen cache; it returns null on
-  all five models instead of fabricating a plausible-looking number. It also
-  never reports a calibrated probability, and only reports a directional
-  research call for missense variants — see `docs/predict.md`.
+- **Not a clinical annotation service, cache-hit or not.** `predict_variants.py`
+  returns null on all five models for anything outside its frozen cache,
+  rather than fabricating a plausible-looking number. `predict_novel.py` can
+  score a genuinely new variant, but has had no external validation of its
+  own and substitutes a different conservation source than the one the models
+  were trained on — see `docs/predict_novel.md` before reading anything into
+  its output. Neither path ever reports a calibrated probability, and both
+  only report a directional research call for missense variants.
 
 ## Data
 
