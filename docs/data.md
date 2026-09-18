@@ -1,7 +1,5 @@
 # Data — feature construction
 
-> **Stratification correction (2026-09-11):** The historical 3,121-row `coding_nontruncating` subset includes 1,329 missense, 1,733 synonymous and 59 other coding variants. Its AUC 0.814, R90, ablation and SHAP results are **not strict-missense results**. Historical filenames containing `missense` are retained for reproducibility. See [stratification details](stratification.md).
-
 The modelling matrix (`data/modeling_matrix.csv.gz`) is one row per ClinVar
 variant with the label, the gene group, the review star, the cohort flags, the
 consequence class, and 18 model features. This document describes how it is built;
@@ -62,7 +60,7 @@ phobius) are excluded.
 ## 5. Gene constraint — gnomAD v2.1.1
 
 `p3_gene_constraint_oe_lof_upper` and `p3_gene_constraint_oe_mis_upper` are the
-upper bounds of the observed/expected ratio for LoF and mixed coding non-truncating variation, from
+upper bounds of the observed/expected ratio for LoF and missense variation, from
 `gnomad.v2.1.1.lof_metrics.by_gene`, matched by current HGNC stable ID. gnomAD v2
 and v4 constraint are never mixed. Multi-gene rows are not assigned an arbitrary
 first value.

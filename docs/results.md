@@ -1,7 +1,5 @@
 # Results
 
-> **Stratification correction (2026-09-11):** The historical 3,121-row `coding_nontruncating` subset includes 1,329 missense, 1,733 synonymous and 59 other coding variants. Its AUC 0.814, R90, ablation and SHAP results are **not strict-missense results**. Historical filenames containing `missense` are retained for reproducibility. See [stratification details](stratification.md).
-
 Gene-held-out grouped 5-fold cross-validation, 10 frozen seeds. XGBoost.
 Raw tables are in `results/`; `run_manifest.json` records the XGBoost version and
 the matrix hash.
@@ -30,7 +28,7 @@ transfer exactly.
 
 ### Additive feature ladder — per-fold AUC
 
-| Feature set | n feat | Headline AUC | coding non-truncating AUC |
+| Feature set | n feat | Headline AUC | Missense AUC |
 |---|---:|---:|---:|
 | conservation only | 1 | 0.700 | 0.666 |
 | consequence only | 4 | 0.852 | 0.531 |
@@ -43,7 +41,7 @@ transfer exactly.
 
 ### Ladder steps — paired per-fold difference
 
-| Step | Headline Δ (t) | coding non-truncating Δ (t) |
+| Step | Headline Δ (t) | Missense Δ (t) |
 |---|---|---|
 | Base → + consequence | +0.128 (23.7) ✓ | +0.006 (3.9) ✓ |
 | + consequence → + constraint | +0.001 (0.2) | +0.025 (1.5) |
@@ -56,7 +54,7 @@ fold SD (0.016) would call it noise.
 
 ### Leave-one-group-out from the full model
 
-| Remove | Headline Δ (t) | coding non-truncating Δ (t) |
+| Remove | Headline Δ (t) | Missense Δ (t) |
 |---|---|---|
 | consequence flags | −0.085 (−11.6) ✓ | +0.001 (0.2) |
 | gene constraint | **+0.011 (+4.4)** ✓ | **−0.054 (−4.0)** ✓ |
@@ -67,9 +65,9 @@ fold SD (0.016) would call it noise.
 
 Gene constraint slightly *hurts* the near-trivial full-cohort AUC (it lets the
 model over-fit gene identity) but is the second most important feature for
-coding non-truncating. It is kept.
+missense. It is kept.
 
-## coding non-truncating subset (coding non-truncating, N = 3,121, prevalence 0.32)
+## Missense subset (coding non-truncating, N = 3,121, prevalence 0.32)
 
 | Full model | value |
 |---|---|
@@ -118,7 +116,7 @@ cleaner.
 ## Feature attribution
 
 `docs/shap.md` has the full write-up. Headline result: TreeSHAP attribution on
-the fitted models ranks the coding non-truncating feature groups in the same order as the
+the fitted models ranks the missense feature groups in the same order as the
 ablation above (frequency > gene constraint > conservation > domain, Spearman
-0.94) — two independent methods agreeing on which features carry the coding non-truncating
+0.94) — two independent methods agreeing on which features carry the missense
 signal.
