@@ -106,6 +106,23 @@ conservation > domain (Spearman rank correlation 0.94). Conservation's
 attribution shows a sharp threshold around a score of ~1–2, not a smooth
 gradient. See `docs/shap.md`.
 
+## Predict a variant
+
+```bash
+pip install -r predict/requirements-inference.txt   # numpy + xgboost only
+python predict/predict_variants.py --input predict/examples/input.csv --bundle predict/bundle --output my_output/
+python predict/render_variant_report.py --predictions my_output/predictions.jsonl --variant-id 48
+```
+
+This scores a variant against **five models** side by side — 18 features
+only, GPN only, 18+GPN, and two 18+GPN+AVI variants (pooled and
+consequence-stratified) — and renders a plain-language report. Scores are
+uncalibrated (not probabilities), and **this only works for variants already
+in the shipped frozen annotation cache**, not an arbitrary novel variant. Read
+[`docs/predict.md`](docs/predict.md) before relying on this for anything —
+it explains why, what each model actually is, and what `predict/examples/known_variants_7125.csv`
+lists as valid inputs.
+
 ## Repository layout
 
 ```text
@@ -130,10 +147,14 @@ scripts/
 data/
   modeling_matrix.csv.gz   per-variant features + label + gene group + cohort flags
 docs/
-  methods.md  data.md  results.md  shap.md  limitations.md
+  methods.md  data.md  results.md  shap.md  limitations.md  predict.md
 results/
   ladder_*.csv  stratified_headline.csv  split_gap ...  run_manifest.json
   shap/  importance / group_importance / by_consequence / conservation_bands + figures/
+predict/
+  prediction_core.py  predict_variants.py  render_variant_report.py
+  bundle/     hash-verified models + frozen annotation cache (see docs/predict.md)
+  examples/   input.csv  mixed_inputs.csv  known_variants_7125.csv
 ```
 
 ## Reproduce

@@ -1,5 +1,47 @@
 # Changelog
 
+## 2026-09-18 — Add downloadable five-model prediction CLI (`predict/`)
+
+- Added `predict/`: a CLI (`predict_variants.py` + `prediction_core.py`) that
+  scores a variant against five related models (`ORIGINAL18`, `GPN3`,
+  `ORIGINAL18_GPN`, `FULL_UNIFIED`, `FULL_STRATIFIED`) and a new
+  `render_variant_report.py` that turns the structured output into a
+  plain-language Markdown report — the "detailed analysis" piece that an
+  earlier engineering pass on this same prediction core had explicitly
+  deferred. See `docs/predict.md` (new) and the `MODEL_CARD.md` update.
+- The bundle (`predict/bundle/`: hash-verified model weights + a frozen,
+  pre-verified annotation cache for ~4,050 variants) and the two inference
+  scripts originate from a prior engineering pass (dated 2026-09-15) that had
+  been run and verified on a separate compute server but never pushed to this
+  repository, pending further validation work. Before folding it in here:
+  - `prediction_core.py` and `predict_variants.py` were reformatted from a
+    deliberately compact single-file style into normal multi-line Python for
+    readability. The reformatted code was checked to produce **byte-identical**
+    `predictions.jsonl` / `predictions.csv` / `predictions_wide.csv` against
+    the original code, on the shipped examples and on the full 7,125-variant
+    development cohort (35,625 model rows), before being committed.
+  - Every file under `predict/bundle/` was copied byte-for-byte and re-verified
+    against its recorded sha256 in `bundle_manifest.json` after the copy.
+- Added `tests/test_predict.py` (needs `predict/requirements-inference.txt`;
+  skipped otherwise) and `tests/test_render_variant_report.py`
+  (dependency-free), including a regression test pinning known scores for one
+  variant so a future change can't silently drift the numbers.
+- Added a `predict-test` / `predict-demo` target to `Makefile`, and a CI step
+  that runs the full CLI + report generator on every push.
+- **Known gaps carried over, not fixed here** (tracked in `PROJECT_STATUS.md`):
+  this only scores variants already in the frozen cache — a genuinely novel
+  variant returns null on all five models by design, since an earlier version
+  of this tool had a real bug where caller-supplied external annotations could
+  be accepted without being verified. Scores are uncalibrated, not
+  probabilities. There is no dedicated AlphaGenome-only model — the closest
+  things (`FULL_UNIFIED`/`FULL_STRATIFIED`) use a composite AVI score that
+  also includes AlphaMissense and related signals, not pure AlphaGenome.
+- The prior engineering pass's own working notes said not to push this to
+  GitHub yet, pending that further validation work. Publishing it now, with
+  the scope limitations above stated plainly in `docs/predict.md` and
+  `MODEL_CARD.md`, was a deliberate decision to revisit that hold rather than
+  an oversight.
+
 ## 2026-09-18 — Repository hardening
 
 - Added `LICENSE` (MIT), `CITATION.cff`, `MODEL_CARD.md`, `PROJECT_STATUS.md`.
