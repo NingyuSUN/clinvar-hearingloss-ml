@@ -1,0 +1,8 @@
+# Extra dependencies for predict_novel.py (live annotation of a variant not
+# already in predict/bundle's frozen cache), on top of requirements-inference.txt.
+requests>=2.31
+polars>=1.0
+# Optional: only needed if you pass --api-key / set ALPHAGENOME_API_KEY to get
+# avi/splice_sites and the FULL_UNIFIED/FULL_STRATIFIED models. Apply for a key
+# at https://deepmind.google.com/science/alphagenome.
+alphagenome
