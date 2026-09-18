@@ -14,6 +14,14 @@ recognising the gene, not learning variant-level pathogenicity signal.
 This is a research/portfolio project, not a validated clinical tool. See
 `docs/limitations.md` for the full limitations list.
 
+A second, separate deliverable lives in `predict/`: a downloadable CLI that
+scores a variant against **five** related models (18 features only, GPN only,
+18+GPN, and two 18+GPN+AVI variants) and renders a plain-language report. It
+reuses this same frozen gene-held-out protocol for routing, but see
+`docs/predict.md` for its own, narrower scope — most importantly, **it only
+scores variants already in a shipped frozen annotation cache**, not an
+arbitrary novel variant.
+
 ## Intended use
 
 - Demonstrating a leakage-aware evaluation protocol (frozen label rule,
@@ -23,6 +31,9 @@ This is a research/portfolio project, not a validated clinical tool. See
 - A methods reference for anyone building a similar gene-panel pathogenicity
   classifier who wants to see the gap between random-split and
   gene-held-out AUC made explicit.
+- Looking up how five differently-featured models (see `docs/predict.md`)
+  score one of the ~4,050 variants covered by `predict/bundle/`, as a research
+  comparison — not as a second opinion on a real case.
 
 ## Out-of-scope use
 
@@ -36,6 +47,11 @@ This is a research/portfolio project, not a validated clinical tool. See
   `README.md` it hides a large per-consequence-class gap (missense recall
   ~53% vs. truncating recall ~99.7%) and must not be read as a uniform
   90%-recall guarantee across variant classes.
+- **Not a novel-variant annotation service.** `predict/` cannot and does not
+  score a variant that isn't already in its frozen cache; it returns null on
+  all five models instead of fabricating a plausible-looking number. It also
+  never reports a calibrated probability, and only reports a directional
+  research call for missense variants — see `docs/predict.md`.
 
 ## Data
 

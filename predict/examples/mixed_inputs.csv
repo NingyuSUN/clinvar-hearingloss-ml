@@ -1,0 +1,9 @@
+variant_id,assembly,chrom,pos,ref,alt
+good,GRCh38,16,2496587,G,C
+wrong_assembly,GRCh37,4,43020345,C,A
+fractional_position,GRCh38,5,12.5,G,A
+indel,GRCh38,2,178456149,C,TA
+wrong_ref,GRCh38,12,100396373,A,T
+unknown,GRCh38,1,1,A,G
+duplicate_a,GRCh38,3,46709164,C,T
+duplicate_b,GRCh38,3,46709164,C,T
