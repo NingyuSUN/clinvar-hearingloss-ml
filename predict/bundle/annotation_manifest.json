@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "external_policy": "verified_cache_only",
+  "feature_contract_id": "HL-prediction-core-frozen-features-2026-09-15-v1",
+  "cache_sha256": "8c5a4871975d02b974ec7d0489c0efa431c131b9af50a601a10086b39de8a937",
+  "input_hashes": {
+    "joined7125_gpn.csv": "7802af78d48fc97c07d5b7a0e680df7cc53e54d13f7f81126e7003bbb000b759",
+    "verified_variant_scores.csv": "5a652f8e93a76494b09824fcb33a0383f081f9bf14af89f72ebbf99c3e301925"
+  },
+  "rows": 7125,
+  "common_cohort_rows": 4050,
+  "reference_counts": {
+    "matched": 5784,
+    "not_checked_non_snv": 1341
+  },
+  "reference_manifest": {
+    "status": "complete",
+    "assembly": "GRCh38",
+    "ensembl_release": 115,
+    "url": "https://ftp.ensembl.org/pub/release-115/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz",
+    "publisher_checksum_type": "BSD sum -r (checksum and 1024-byte blocks)",
+    "publisher_checksum": [
+      "22450",
+      "861294"
+    ],
+    "fasta": "/home/seedna2/ML_HL/data/raw/ensembl115_GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.fa",
+    "files": {
+      "Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz": {
+        "bytes": 881964081,
+        "sha256": "d8c3af0094a7bba6125763bad779ec18a81483c739c6ed122094bdf86c187b92"
+      },
+      "Homo_sapiens.GRCh38.dna.primary_assembly.fa": {
+        "bytes": 3151425851,
+        "sha256": "1e74081a49ceb9739cc14c812fbb8b3db978eb80ba8e5350beb80d8ad8dfef3b"
+      },
+      "Homo_sapiens.GRCh38.dna.primary_assembly.fa.fai": {
+        "bytes": 6406,
+        "sha256": "0998f61682f4041b11f0d156e1db6dae3e4c743e26643a3f45ea7faea70cb604"
+      },
+      "CHECKSUMS": {
+        "bytes": 4979,
+        "sha256": "f413b69588fe36008a61ac509d02c09fe0f3b967b4838b4a172fa5d237af26c8"
+      }
+    }
+  },
+  "feature_policies": {
+    "p1_has_frameshift": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "p1_has_stop_gained": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "p1_has_canonical_splice": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "p1_has_splice_region": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "variant_length": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "has_del": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "has_ins": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "has_dup": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "ensembl_conservation": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "p3_gene_constraint_oe_lof_upper": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "p3_gene_constraint_oe_mis_upper": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "p4_freq_log10": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "p2_af_known_missing": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "p2_not_observed_in_gnomad_r4": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "p2_low_an_flag": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "p3_in_specific_domain": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "p3_specific_domain_count": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "p3_variant_is_coding": {
+      "source_id": "frozen_original18_snapshot",
+      "external_allowed": false,
+      "reason": "Historical feature provenance and transformation are not fully reconstructed for novel variants"
+    },
+    "gpn_v100": {
+      "source_id": "gpn_v100",
+      "external_allowed": false,
+      "reason": "Novel annotations disabled until independently reconstructed source adapter is available"
+    },
+    "gpn_m447": {
+      "source_id": "gpn_m447",
+      "external_allowed": false,
+      "reason": "Novel annotations disabled until independently reconstructed source adapter is available"
+    },
+    "gpn_p243": {
+      "source_id": "gpn_p243",
+      "external_allowed": false,
+      "reason": "Novel annotations disabled until independently reconstructed source adapter is available"
+    },
+    "avi": {
+      "source_id": "alpha_atlas_avi",
+      "external_allowed": false,
+      "reason": "Novel annotations disabled until independently reconstructed source adapter is available"
+    },
+    "splice_sites": {
+      "source_id": "alpha_atlas_splice_sites",
+      "external_allowed": false,
+      "reason": "Novel annotations disabled until independently reconstructed source adapter is available"
+    }
+  },
+  "limits": [
+    "Frozen cache preserves unresolved original conservation provenance for reproducibility; not proof of a compatible novel-variant feature extractor.",
+    "External original18 novel annotations are not enabled until source transformations are reconstructed.",
+    "Clinical labels are excluded from runtime cache."
+  ]
+}

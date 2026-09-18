@@ -8,3 +8,12 @@ data/modeling_matrix.csv.gz -text -diff
 *.npy -text -diff
 *.npz -text -diff
 *.joblib -text -diff
+*.ubj -text -diff
+
+# Every file under predict/bundle/ (including the .json ones) is byte-pinned
+# by a sha256 recorded in bundle_manifest.json / model_registry.json, which
+# predict/prediction_core.py re-checks on every load. Any line-ending
+# normalization here — e.g. LF->CRLF on a Windows checkout — would change
+# those bytes and make Bundle() raise "Bundle integrity mismatch" for anyone
+# who clones the repo on Windows. Never touch this directory's bytes.
+predict/bundle/** -text -diff

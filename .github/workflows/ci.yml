@@ -17,13 +17,17 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: requirements.txt
+          cache-dependency-path: |
+            requirements.txt
+            predict/requirements-inference.txt
       - name: Install runtime dependencies
-        run: python -m pip install -r requirements.txt pytest
-      - name: Run deterministic unit tests
+        run: python -m pip install -r requirements.txt -r predict/requirements-inference.txt pytest
+      - name: Run deterministic unit tests (includes predict/ regression tests)
         run: python -m pytest tests -q
       - name: Validate public artifacts (no retraining)
         run: python tools/validate_public_artifacts.py
+      - name: Run the predict CLI + report generator end to end
+        run: make predict-demo
       - name: Check Python syntax without writing bytecode
         run: |
           python - <<'PY'
@@ -34,6 +38,7 @@ jobs:
               + list(Path("scripts").rglob("*.py"))
               + list(Path("tools").rglob("*.py"))
               + list(Path("tests").rglob("*.py"))
+              + list(Path("predict").rglob("*.py"))
           )
           for path in files:
               ast.parse(path.read_text(encoding="utf-8"), filename=str(path))

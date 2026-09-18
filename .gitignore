@@ -15,3 +15,8 @@ dist/
 /results/analysis_summary.json
 # keep the compressed matrix, not an uncompressed local copy
 /data/modeling_matrix.csv
+
+# predict_variants.py refuses to write into a non-empty directory, so demo
+# runs and ad hoc predict output directories should never be committed
+/artifacts/
+/my_output/

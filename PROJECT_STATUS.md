@@ -17,6 +17,18 @@ rather than known bugs.
       (`results/review_status_sensitivity.csv`).
 - [x] Repository hardening: MIT license, CI (tests + public-artifact
       validation on every push), line-ending normalization, model card.
+- [x] Downloadable five-model prediction CLI (`predict/`) with a plain-language
+      report generator, covering the ~4,050-variant frozen cache; verified
+      byte-identical to the original engineering pass's output before being
+      folded into this repo (see `CHANGELOG.md`).
+- [ ] Live-annotation pipeline for genuinely novel variants (real-time VEP +
+      gnomAD + local GPN inference + an AlphaGenome call). `predict/` is
+      deliberately cache-only until this exists — see `docs/predict.md`.
+- [ ] Probability calibration and independent external-label validation for
+      the `predict/` models; scores are currently uncalibrated by design.
+- [ ] A dedicated AlphaGenome-only model. The closest things that exist today
+      (`FULL_UNIFIED`, `FULL_STRATIFIED`) use a composite AVI score that also
+      includes AlphaMissense and related signals.
 - [ ] Strict-missense-only re-evaluation of the coding non-truncating subset
       (flagged as separate follow-on work in the 2026-09-11 stratification
       commit; that commit's documentation changes were reverted 2026-09-18
@@ -46,3 +58,9 @@ intended to be used as, a clinical decision-support tool.
 - Per-consequence-class operating points instead of a single global R90
   threshold.
 - Re-evaluation against a newer ClinVar release to check drift.
+- Reconstructing the original 18-feature extraction/transform provenance
+  (especially conservation) well enough to build a genuine novel-variant
+  pipeline for `predict/`, then validating all five models against external
+  labels that never touched training/selection/calibration.
+- A true AlphaGenome-only model, if the AlphaGenome-specific component can be
+  cleanly separated out of the current composite AVI score.
