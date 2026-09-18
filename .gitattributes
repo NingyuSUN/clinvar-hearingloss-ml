@@ -1,0 +1,10 @@
+# Normalize line endings on checkin/checkout so cross-platform edits (e.g. a
+# Windows-side tool re-saving a results file) can never silently flip an
+# entire file to CRLF and mask a real content diff behind whitespace noise.
+* text=auto eol=lf
+
+# The compressed modeling matrix is binary; never run text normalization on it.
+data/modeling_matrix.csv.gz -text -diff
+*.npy -text -diff
+*.npz -text -diff
+*.joblib -text -diff
