@@ -6,6 +6,7 @@ build/
 dist/
 .venv/
 .ipynb_checkpoints/
+.pytest_cache/
 .DS_Store
 
 # re-run artifacts (the frozen reference set is tracked; per-fold dumps are not)
