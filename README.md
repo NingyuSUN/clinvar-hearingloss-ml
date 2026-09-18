@@ -123,6 +123,19 @@ in the shipped frozen annotation cache**, not an arbitrary novel variant. Read
 it explains why, what each model actually is, and what `predict/examples/known_variants_7125.csv`
 lists as valid inputs.
 
+**Have a variant that isn't in that cache?** `predict/predict_novel.py`
+annotates it live (Ensembl VEP, gnomAD, a public GPN-Star lookup, and
+optionally your own AlphaGenome API key) and scores it the same way:
+
+```bash
+pip install -r predict/requirements-inference.txt -r predict/requirements-novel.txt
+python predict/predict_novel.py --input my_variants.csv --bundle predict/bundle --output my_output/
+```
+
+This is a separate, much less verified path than the cache-only one above —
+read [`docs/predict_novel.md`](docs/predict_novel.md) first, especially the
+part about the conservation feature using a documented substitute source.
+
 ## Repository layout
 
 ```text
@@ -147,13 +160,14 @@ scripts/
 data/
   modeling_matrix.csv.gz   per-variant features + label + gene group + cohort flags
 docs/
-  methods.md  data.md  results.md  shap.md  limitations.md  predict.md
+  methods.md  data.md  results.md  shap.md  limitations.md  predict.md  predict_novel.md
 results/
   ladder_*.csv  stratified_headline.csv  split_gap ...  run_manifest.json
   shap/  importance / group_importance / by_consequence / conservation_bands + figures/
 predict/
-  prediction_core.py  predict_variants.py  render_variant_report.py
-  bundle/     hash-verified models + frozen annotation cache (see docs/predict.md)
+  prediction_core.py  predict_variants.py  render_variant_report.py   cache-only (docs/predict.md)
+  live_sources.py  predict_novel.py                                    live/novel (docs/predict_novel.md)
+  bundle/     hash-verified models + frozen annotation cache
   examples/   input.csv  mixed_inputs.csv  known_variants_7125.csv
 ```
 
