@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+title: "Gene-Held-Out Evaluation of ClinVar Hearing-Loss Variant Pathogenicity"
+authors:
+  - family-names: Sun
+    given-names: Ningyu
+  - name: "Max Cao"
+version: 0.3.0
+date-released: 2026-09-18
+message: "If you use this repository, please cite it using the metadata in this file."
+repository-code: "https://github.com/NingyuSUN/clinvar-hearingloss-ml"
+license: MIT

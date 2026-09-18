@@ -1,11 +1,16 @@
 # Hearing-loss variant pathogenicity — gene-held-out evaluation
 
+[![Repository checks](https://github.com/NingyuSUN/clinvar-hearingloss-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/NingyuSUN/clinvar-hearingloss-ml/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A machine-learning study of ClinVar hearing-loss variants. The question is not
 "how high can the AUC go" but **how much of a pathogenicity model's apparent
 performance survives when the test genes are genuinely unseen**, and where the
 signal actually comes from.
 
-> Research / portfolio project. Not a clinical diagnostic tool.
+> Research / portfolio project. Not a clinical diagnostic tool. See
+> [`MODEL_CARD.md`](MODEL_CARD.md) for intended/out-of-scope use and
+> [`PROJECT_STATUS.md`](PROJECT_STATUS.md) for what is and isn't finished.
 
 ## What this project does
 
@@ -104,6 +109,11 @@ gradient. See `docs/shap.md`.
 ## Repository layout
 
 ```text
+LICENSE  CITATION.cff  MODEL_CARD.md  PROJECT_STATUS.md  CHANGELOG.md
+.github/workflows/ci.yml   CI: tests + public-artifact validation, no retraining
+Makefile                    test / validate / syntax targets
+tools/validate_public_artifacts.py   dependency-free checks on results/ + docs/
+tests/                       pytest wrapper around the validator
 src/hlpath/
   protocol.py       frozen label / cohort / gene-group / feature definitions
   pipeline.py       balanced grouped CV, nested inner hold-out, training, R90
@@ -135,6 +145,15 @@ pip install -e .
 
 python scripts/run_evaluation.py --out results/
 python scripts/analyze_results.py --dir results/
+```
+
+To check the repository itself (fast, no retraining, no data required beyond
+what's already committed):
+
+```bash
+make test      # pytest: JSON/CSV well-formedness, no CRLF regressions
+make validate  # same checks, standalone script (what CI runs)
+make syntax    # ast-parse every tracked .py file
 ```
 
 `run_evaluation.py` reads `data/modeling_matrix.csv.gz` (override with
