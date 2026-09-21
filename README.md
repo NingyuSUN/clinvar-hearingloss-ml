@@ -1,241 +1,105 @@
-# Hearing-loss variant pathogenicity — gene-held-out evaluation
+# Hearing-loss variant classification: generalization to unseen genes
 
 [![Repository checks](https://github.com/NingyuSUN/clinvar-hearingloss-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/NingyuSUN/clinvar-hearingloss-ml/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A machine-learning study of ClinVar hearing-loss variants. The question is not
-"how high can the AUC go" but **how much of a pathogenicity model's apparent
-performance survives when the test genes are genuinely unseen**, and where the
-signal actually comes from.
+**How well does a ClinVar pathogenicity classifier generalize to genes excluded
+from training, and which biological features drive its predictions?**
 
-> Research / portfolio project. Not a clinical diagnostic tool. See
-> [`MODEL_CARD.md`](MODEL_CARD.md) for intended/out-of-scope use and
-> [`PROJECT_STATUS.md`](PROJECT_STATUS.md) for what is and isn't finished.
+This research project combines ClinVar labels, VEP annotations, gnomAD frequency
+and gene constraint, protein domains, and conservation in an XGBoost pipeline.
+It demonstrates gene-group evaluation, feature ablation, out-of-fold attribution,
+and reproducible inference. It is not a clinical diagnostic tool.
 
-## What this project does
+## Evaluation workflow
 
-- Builds a per-variant feature table from ClinVar, Ensembl VEP consequence terms,
-  gnomAD allele frequency and gene constraint, protein-domain membership, and an
-  evolutionary conservation score.
-- **Freezes** the label rule, the cohort, the gene-group split, the operating
-  point, and the feature list *before any model is trained* (`docs/methods.md`).
-- Evaluates an XGBoost classifier with **grouped 5-fold cross-validation on gene
-  groups** (connected components of gene co-occurrence), a nested gene-group
-  hold-out for iteration and threshold selection, and 10 frozen seeds.
-- Reports an additive feature ablation with **paired per-fold tests**, a
-  **patient-level bootstrap CI** on the pooled out-of-fold predictions, and a
-  **consequence-stratified** breakdown.
+```mermaid
+flowchart TD
+    A["ClinVar labels + variant annotations"] --> B["Cohort gates + 18 biological features"]
+    B --> C["Outer split by gene-associated group"]
+    C --> D["Inner training: imputation + XGBoost"]
+    C --> E["Inner validation: iteration + R90 threshold"]
+    D --> E
+    E --> F["Fixed model + threshold"]
+    C --> G["Held-out outer-test genes"]
+    F --> H["Outer-test predictions across 10 seeds"]
+    G --> H
+    H --> I["Pooled metrics + gene-group intervals"]
+    H --> J["Feature ablation + subgroup analysis"]
+```
 
-## Headline results
+This shows the completed model evaluation and frozen-prediction reanalysis.
+The five-model prediction demo below is a separate deliverable; probability calibration and independent external validation
+are outside the completed evaluation.
 
-Headline cohort: 7,125 variants (feature-complete, ClinVar review status ≥ 1 star),
-167 gene groups, roughly balanced labels.
+## Main findings
 
-| Model (18 features) | AUC | 95% CI |
+Published results use seed-averaged out-of-fold predictions from grouped
+five-fold evaluation over ten seeds.
+
+| Evaluation cohort | Variants | Pooled ROC-AUC [95% interval] |
 |---|---:|---:|
-| Full model, gene-held-out | **0.930** | 0.924 – 0.936 |
-| Full model, ordinary random split | 0.996 | 0.995 – 0.997 |
+| Headline: feature-complete, ClinVar review status ≥1 star | 7,125 | 0.930 [0.892, 0.974] |
+| Coding non-truncating subset | 3,121 | 0.815 [0.702, 0.920] |
 
-A random split lets the model recognise the gene and inflates AUC by ~0.07. Every
-number below is gene-held-out.
+The headline cohort contains 167 gene groups. A separate random-row-split
+comparison reports AUC around 0.996, illustrating how much the evaluation changes
+when genes can appear on both sides of the split.
 
-### The cohort is mostly decided by consequence type
+Feature ablations and SHAP highlight consequence type and allele frequency.
+At the headline model's validation-selected R90 threshold, outer-test pooled
+recall is **0.845**, and coding non-truncating recall is **0.530**.
+A validation target of 90% recall does not guarantee that recall on new genes.
 
-In a hearing-loss gene panel, loss-of-function is near-deterministic for
-pathogenicity (ACMG `PVS1`). That shows up as near-perfect separation before any
-model runs:
+**Coding non-truncating is not strict missense.** Historical result filenames
+containing `missense` refer to the broader subset. The [statistical revision](docs/statistical_revision.md)
+uses 2,000 whole-gene-group bootstrap draws, conditional on fixed predictions;
+intervals exclude retraining and full CV dependence. Ablation differences are
+descriptive, without independent-fold significance claims.
+See [results](docs/results.md) and [validation status](docs/validation_status.md).
 
-| Consequence class | Variants | Pathogenic |
-|---|---:|---:|
-| Truncating (frameshift / stop) | 1,952 | 99.9 % |
-| Canonical splice | 563 | 99.6 % |
-| Non-coding / other | 1,489 | 5.1 % |
-| **Coding non-truncating (missense)** | **3,121** | **31.7 %** |
+## Try the frozen prediction demo
 
-Roughly 35 % of the cohort is one class. A model using only the four consequence
-flags already scores **AUC 0.85** on the full cohort. The full-cohort 0.93 is
-mostly loss-of-function identification.
-
-### On the genuine problem — missense — the model is weaker
-
-| Missense subset (N = 3,121) | AUC | 95% CI | R90 precision |
-|---|---:|---:|---:|
-| Full model | **0.814** | 0.800 – 0.829 | 0.53 |
-| Frequency only | 0.772 | — | — |
-
-Allele frequency is the dominant feature here (removing it costs 0.136 AUC), and
-frequency also feeds ClinVar's own benign calls through `BA1` / `BS1`, so part of
-that signal is the model re-deriving the labelling rule.
-
-### The R90 operating point hides the missense gap
-
-The threshold is chosen for recall ≥ 0.90 on the validation set. At that single
-global threshold:
-
-| Consequence class | Recall |
-|---|---:|
-| Truncating | 99.7 % |
-| Canonical splice | 96.6 % |
-| **Missense** | **53.0 %** |
-| Non-coding / other | 15.8 % |
-
-A headline "90 % recall" is carried by the trivial classes; about one in two
-missense pathogenic variants is missed.
-
-### Feature ablation (paired per-fold, full cohort → missense)
-
-| Add to Base | Full cohort ΔAUC | Missense ΔAUC |
-|---|---:|---:|
-| consequence flags | **+0.128** (t 23.7) | +0.006 (t 3.9) |
-| gene constraint | +0.001 (ns) | +0.025 (ns) |
-| allele frequency | +0.020 (t 3.1) | **+0.146** (t 8.0) |
-| protein domain | +0.004 (t 4.4) | +0.002 (ns) |
-
-Consequence type carries the full cohort; frequency carries missense.
-Under leave-one-group-out from the full model, **gene constraint is the second
-most important feature for missense** (−0.054, t −4.0) even though it adds nothing
-on the full cohort — so it is kept.
-
-Full tables: `docs/results.md` and `results/`.
-
-### Feature attribution agrees with the ablation
-
-TreeSHAP (exact, out-of-fold, on the same frozen models) ranks the missense
-feature groups the same way the ablation does — frequency > gene constraint >
-conservation > domain (Spearman rank correlation 0.94). Conservation's
-attribution shows a sharp threshold around a score of ~1–2, not a smooth
-gradient. See `docs/shap.md`.
-
-## Predict a variant
+From the repository root, using Python 3.11 or later:
 
 ```bash
-pip install -r predict/requirements-inference.txt   # numpy + xgboost only
-python predict/predict_variants.py --input predict/examples/input.csv --bundle predict/bundle --output my_output/
-python predict/render_variant_report.py --predictions my_output/predictions.jsonl --variant-id 48
+pip install -r predict/requirements-inference.txt
+python predict/predict_variants.py --input predict/examples/input.csv --bundle predict/bundle --output demo_output/
+python predict/render_variant_report.py --predictions demo_output/predictions.jsonl --variant-id 48
 ```
 
-This scores a variant against **five models** side by side — 18 features
-only, GPN only, 18+GPN, and two 18+GPN+AVI variants (pooled and
-consequence-stratified) — and renders a plain-language report. Scores are
-uncalibrated (not probabilities), and **this only works for variants already
-in the shipped frozen annotation cache**, not an arbitrary novel variant. Read
-[`docs/predict.md`](docs/predict.md) before relying on this for anything —
-it explains why, what each model actually is, and what `predict/examples/known_variants_7125.csv`
-lists as valid inputs.
+Use a fresh output directory. This replays supported variants in the frozen
+annotation cache across five bundled model configurations; it does not annotate
+arbitrary new variants. Scores are uncalibrated.
+Read the [prediction contract](docs/predict.md) for supported inputs and model provenance.
 
-**Have a variant that isn't in that cache?** `predict/predict_novel.py`
-annotates it live (Ensembl VEP, gnomAD, a public GPN-Star lookup, and
-optionally your own AlphaGenome API key) and scores it the same way:
+## Evaluation and reproduction
 
-```bash
-pip install -r predict/requirements-inference.txt -r predict/requirements-novel.txt
-python predict/predict_novel.py --input my_variants.csv --bundle predict/bundle --output my_output/
-```
-
-This is a separate, much less verified path than the cache-only one above —
-read [`docs/predict_novel.md`](docs/predict_novel.md) first, especially the
-part about the conservation feature using a documented substitute source.
-
-## Repository layout
-
-```text
-LICENSE  CITATION.cff  MODEL_CARD.md  PROJECT_STATUS.md  CHANGELOG.md
-.github/workflows/ci.yml   CI: tests + public-artifact validation, no retraining
-Makefile                    test / validate / syntax / predict-test / predict-demo targets
-tools/validate_public_artifacts.py   dependency-free checks on results/ + docs/
-tests/                       pytest wrapper around the validator
-src/hlpath/
-  protocol.py       frozen label / cohort / gene-group / feature definitions
-  pipeline.py       balanced grouped CV, nested inner hold-out, training, R90
-  metrics.py        R90 threshold (with one-class guard), bootstrap CI, paired tests
-  analysis.py       ladder / stratified / split-gap tables
-  shap_analysis.py  TreeSHAP attribution on the frozen model
-  features.py       load the modelling matrix
-  config.py         paths, seeds, XGBoost params
-scripts/
-  run_evaluation.py    the full cross-validation run
-  analyze_results.py   the reported tables
-  run_shap.py          TreeSHAP tables + figures
-  build_matrix.py      regenerate the matrix from a raw annotated feature table
-data/
-  modeling_matrix.csv.gz   per-variant features + label + gene group + cohort flags
-docs/
-  methods.md  data.md  results.md  shap.md  limitations.md  predict.md  predict_novel.md
-results/
-  ladder_*.csv  stratified_headline.csv  split_gap ...  run_manifest.json
-  shap/  importance / group_importance / by_consequence / conservation_bands + figures/
-predict/
-  prediction_core.py  predict_variants.py  render_variant_report.py   cache-only (docs/predict.md)
-  live_sources.py  predict_novel.py                                    live/novel (docs/predict_novel.md)
-  bundle/     hash-verified models + frozen annotation cache
-  examples/   input.csv  mixed_inputs.csv  known_variants_7125.csv
-```
-
-## Reproduce
+Gene co-occurrence defines the split groups. Inner training data determine
+imputation; an inner gene-group holdout selects model iteration and threshold.
+Outer-test genes are excluded from these choices.
 
 ```bash
 conda env create -f environment.yml
 conda activate hearingloss-variants
 pip install -e .
-
-python scripts/run_evaluation.py --out results/
-python scripts/analyze_results.py --dir results/
+python scripts/run_evaluation.py --out runs/readme_reproduction
+python scripts/analyze_results.py --dir runs/readme_reproduction
 ```
 
-To check the repository itself (fast, no retraining, no data required beyond
-what's already committed):
+This trains models from the committed modelling matrix and can take time.
+Use a new output directory to preserve published results.
+[Methods](docs/methods.md) explain the protocol; [data](docs/data.md) explains
+the matrix and the `HLPATH_DATA` override.
 
-```bash
-make test          # pytest: JSON/CSV well-formedness, no CRLF regressions
-make validate      # same checks, standalone script (what CI runs)
-make syntax        # ast-parse every tracked .py file
-make predict-demo  # run predict_variants.py + render a report end to end
-make predict-test  # pytest against predict/bundle (needs predict/requirements-inference.txt)
-```
+## Scope and next steps
 
-`run_evaluation.py` reads `data/modeling_matrix.csv.gz` (override with
-`HLPATH_DATA`). The fold assignments are a deterministic function of the 10 frozen
-seeds in `src/hlpath/config.py`. To rebuild the matrix from raw annotations, see
-`docs/data.md` and `scripts/build_matrix.py`.
+VUS/conflicting labels are excluded; frequency partly overlaps the evidence used
+to assign ClinVar labels. Conservation provenance remains unresolved. The
+[live annotation path](docs/predict_novel.md) blocks models that require the unresolved conservation feature
+and has no independent external validation; the frozen demo is the review entrypoint.
 
-## Methods in brief
-
-- **Label** — ClinVar aggregate `ClinicalSignificance`: P/LP → 1, B/LB → 0,
-  "Likely" kept, VUS / Conflicting excluded. (Not `ClinSigSimple`.)
-- **Cohort** — feature-complete gate (reliable consequence, present gene
-  constraint, definitive frequency status, coding call made, conservation present,
-  single gene, label present) ∩ review status ≥ 1 star. All-tier and ≥ 2-star
-  cohorts are reported as sensitivity analyses.
-- **Split** — gene groups are connected components of `GeneSymbol` co-occurrence;
-  a whole component is held out together. Outer grouped 5-fold, folds balanced on
-  row count and label prevalence. Inner: a balanced gene-group hold-out for
-  iteration selection and the R90 threshold.
-- **Model** — XGBoost (`eta` 0.03, depth 5), trained to a 700-round cap with no
-  in-loop early stopping; the best iteration is the argmin of the
-  inner-validation log-loss curve. The R90 threshold is frozen on the inner
-  validation and applied to the outer test with the same fitted model.
-- **Statistics** — the mean ± SD across overlapping folds is not a confidence
-  interval; a patient-level bootstrap on the pooled predictions is used instead,
-  and ladder steps use paired per-fold differences.
-
-## Limitations
-
-See `docs/limitations.md`. In short: excluding VUS / Conflicting makes an easier,
-selected task; consequence type near-determines the label for a third of the
-cohort; allele frequency is partly circular with the ClinVar labels; the
-conservation feature's provenance and the ClinVar phenotype-condition mapping are
-not fully audited.
-
-## Data sources
-
-- NCBI ClinVar `variant_summary.txt.gz` (public domain).
-- Ensembl VEP (REST, GRCh38) — consequence terms, canonical / MANE transcripts,
-  protein-domain overlaps.
-- gnomAD v4.1.1 — allele frequency (PASS); gnomAD v2.1.1 — gene constraint
-  (`oe_lof` / `oe_mis` upper bound).
-- Ensembl comparative-genomics conservation score.
-
-`predict/predict_novel.py` additionally uses `songlab/gpn-star-scores`
-(Hugging Face), the AlphaGenome API, and UCSC phyloP — see
-[`docs/predict_novel.md`](docs/predict_novel.md) for that list and why it
-differs from the training data sources above.
+Probability calibration and independent external validation remain research
+boundaries. Strict-missense evaluation and robustness work are tracked in [project status](PROJECT_STATUS.md).
+[Engineering case study](docs/engineering_case_study.md) · [Model card](MODEL_CARD.md) · [Limitations](docs/limitations.md) ·
+[SHAP analysis](docs/shap.md) · [CI checks](.github/workflows/ci.yml)

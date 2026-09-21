@@ -1,5 +1,5 @@
 """Turn raw per-fold output into the reported tables: the additive feature ladder
-with paired tests, the pooled out-of-fold confusion with a bootstrap CI, the
+with descriptive paired differences, the pooled out-of-fold confusion with a bootstrap CI, the
 consequence-stratified breakdown, and the gene-split / random-split gap.
 """
 from __future__ import annotations
@@ -22,12 +22,42 @@ LADDER_STEPS = [("L2_base", "L3_consequence"), ("L3_consequence", "L4_constraint
 
 
 def _pooled(per_fold: pd.DataFrame, oof: pd.DataFrame) -> pd.DataFrame:
-    """Attach each row's own frozen fold threshold and majority-vote it across seeds."""
-    thr = per_fold[["seed", "outer_fold", "threshold"]]
-    merged = oof.merge(thr, on=["seed", "outer_fold"], how="left")
+    """Validate repeated OOF coverage, average scores, retain biological groups."""
+    keys = ["seed", "outer_fold"]
+    required = keys + ["VariationID", "y", "prob", "gene_group", "consequence_class"]
+    if oof.empty or oof[required].isna().any().any():
+        raise ValueError("OOF rows and all required fields must be present")
+    if not np.isfinite(oof["prob"]).all() or not oof["y"].isin([0, 1]).all():
+        raise ValueError("OOF scores must be finite and labels binary")
+    if oof.duplicated(["seed", "VariationID"]).any():
+        raise ValueError("duplicate variant predictions within a seed")
+    for col in ["y", "gene_group", "consequence_class"]:
+        if (oof.groupby("VariationID")[col].nunique() != 1).any():
+            raise ValueError(f"inconsistent {col} across seeds")
+    if per_fold.empty or per_fold[keys + ["threshold"]].isna().any().any():
+        raise ValueError("fold thresholds and keys must be present")
+    if per_fold.duplicated(keys).any() or not np.isfinite(per_fold["threshold"]).all():
+        raise ValueError("fold thresholds must be unique and finite")
+    if "threshold_ok" in per_fold and not per_fold["threshold_ok"].eq(True).all():
+        raise ValueError("unsuccessful threshold selection")
+    if set(map(tuple, oof[keys].to_numpy())) != set(map(tuple, per_fold[keys].to_numpy())):
+        raise ValueError("OOF and threshold fold coverage differ")
+    if (oof.groupby("VariationID")["seed"].nunique() != per_fold["seed"].nunique()).any():
+        raise ValueError("incomplete seed coverage for a variant")
+    fold_sets = per_fold.groupby("seed")["outer_fold"].agg(frozenset)
+    if len(set(fold_sets)) != 1:
+        raise ValueError("incomplete fold coverage across seeds")
+    if "n_test" in per_fold:
+        counts = oof.groupby(keys).size().rename("observed")
+        expected = per_fold.set_index(keys)["n_test"]
+        if not counts.sort_index().eq(expected.sort_index()).all():
+            raise ValueError("OOF row counts differ from recorded test sizes")
+    merged = oof.merge(per_fold[keys + ["threshold"]], on=keys,
+                       how="left", validate="many_to_one")
     merged["hit"] = (merged["prob"] >= merged["threshold"]).astype(float)
     return merged.groupby("VariationID").agg(
         y=("y", "first"), prob=("prob", "mean"), hit=("hit", "mean"),
+        gene_group=("gene_group", "first"),
         consequence_class=("consequence_class", "first"),
     ).reset_index()
 
@@ -61,7 +91,8 @@ def pooled_oof_table(per_fold: pd.DataFrame, oof_by_set: dict, feature_set: str 
     pooled = _pooled(per_fold[per_fold["feature_set"] == feature_set], oof_by_set[feature_set])
     pred = (pooled["hit"] >= 0.5).to_numpy().astype(int)
     y = pooled["y"].to_numpy().astype(int)
-    ci = bootstrap_ci(y, pooled["prob"].to_numpy(), pred, n_boot=n_boot)
+    ci = bootstrap_ci(y, pooled["prob"].to_numpy(), pred, n_boot=n_boot,
+                      groups=pooled["gene_group"].to_numpy())
     return {
         "feature_set": feature_set,
         "n_variants": int(len(pooled)),

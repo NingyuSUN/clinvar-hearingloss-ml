@@ -30,6 +30,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 from prediction_core import (  # noqa: E402
     INPUT_FIELDS,
     MODELS,
+    TYPES,
+    normalize_rows,
     Bundle,
     extract_features,
     normalize_variant,
@@ -40,7 +42,7 @@ from prediction_core import (  # noqa: E402
 )
 import live_sources as ls  # noqa: E402
 
-ORIGIN = "live_annotated_v1"
+ORIGIN = "live_annotated_v2"
 
 
 def annotate_variant(row: dict, api_key: str | None) -> dict:
@@ -58,7 +60,7 @@ def annotate_variant(row: dict, api_key: str | None) -> dict:
         result["error"] = f"vep_failed:{exc}"
         return result
 
-    if vep["variant_type"] is None:
+    if vep["variant_type"] not in TYPES:
         result["error"] = "unsupported_variant_type"
         return result
     gene_symbol = vep["gene_symbol"]
@@ -120,6 +122,8 @@ def score_annotation(annotation: dict, bundle: Bundle) -> dict:
     """
     models_out = {n: {"status": "not_scored", "score": None, "score_type": "uncalibrated_classifier_score", "probability": None, "probability_status": "not_calibrated", "research_decision": "uncertain_unavailable", "raw_set": None, "reasons": []} for n in MODELS}
 
+    if not annotation["error"] and annotation["variant_type"] not in TYPES:
+        annotation["error"] = "unsupported_variant_type"
     if annotation["error"]:
         for mo in models_out.values():
             mo.update(status=annotation["error"], reasons=[annotation["error"]])
@@ -137,6 +141,8 @@ def score_annotation(annotation: dict, bundle: Bundle) -> dict:
     fake_ann = {"features": annotation["features"], "origin": ORIGIN}
     for name, mo in models_out.items():
         booster, meta, thresholds = bundle.model(name, fold, route)
+        if any(g not in meta["excluded_groups"] for g in groups):
+            raise ValueError("Selected model saw held-out gene group")
         values, errors = extract_features(fake_ann, meta["features"], bundle.continuous)
         mo.update(model_route=meta.get("route", route if name == "FULL_STRATIFIED" else "pooled"), model_weight_sha256=meta["weight_sha256"], annotation_origin=ORIGIN)
         if errors:
@@ -168,7 +174,7 @@ def main():
     if not api_key:
         print("Warning: no AlphaGenome API key given — avi/splice_sites will be null, and FULL_UNIFIED/FULL_STRATIFIED will report missing_or_invalid_features.", file=sys.stderr)
 
-    with open(args.input, newline="") as f:
+    with open(args.input, newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         columns = reader.fieldnames or []
         if set(INPUT_FIELDS) - set(columns):
@@ -179,8 +185,20 @@ def main():
 
     bundle = Bundle(args.bundle)
     results = []
-    for index, row in enumerate(rows):
-        annotation = annotate_variant(row, api_key)
+    for index, (row, normalized) in enumerate(zip(rows, normalize_rows(rows))):
+        expected = bundle.reference_by_locus.get((normalized["chrom"], normalized["pos"]))
+        if not normalized["error"] and expected is not None and expected != normalized["ref"]:
+            normalized["error"] = "reference_mismatch"
+        if normalized["error"]:
+            annotation = {"variant_key": normalized["variant_key"], "error": normalized["error"],
+                          "variant_type": None, "gene_symbols": None, "features": {}, "sources": {}}
+        else:
+            annotation = annotate_variant(row, api_key)
+        cached = bundle.cache.get(annotation["variant_key"], {})
+        if not annotation["error"] and cached and (
+                annotation["gene_symbols"] != cached["gene_symbols"]
+                or annotation["variant_type"] != cached["variant_type"]):
+            annotation["error"] = "live_context_conflicts_with_frozen_cache"
         models = score_annotation(annotation, bundle)
         results.append({
             "input_index": index,
@@ -196,15 +214,16 @@ def main():
             "gene_symbols": annotation["gene_symbols"],
             "model_fold": annotation.get("model_fold"),
             "group_context": annotation.get("group_context"),
-            "in_development_7125": False,
-            "in_common_4050": False,
+            "in_development_7125": cached.get("in_development_7125"),
+            "in_common_4050": cached.get("in_common_4050"),
             "components": {k: v for k, v in annotation["features"].items() if k in ("gpn_v100", "gpn_m447", "gpn_p243", "avi", "splice_sites")},
             "sources": annotation.get("sources", {}),
+            "reference_annotations": {k: v for k, v in annotation["features"].items() if k.endswith("_reference")},
             "models": models,
         })
 
     out.mkdir(parents=True, exist_ok=True)
-    (out / "predictions.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False, allow_nan=False) + "\n" for r in results))
+    (out / "predictions.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False, allow_nan=False) + "\n" for r in results), encoding="utf-8")
 
     manifest = {
         "status": "completed_live_annotated_prediction",
@@ -213,11 +232,12 @@ def main():
         "input_sha256": sha(args.input),
         "bundle_manifest_sha256": sha(Path(args.bundle) / "bundle_manifest.json"),
         "alphagenome_requested": bool(api_key),
+        "not_observed_floor_af": ls.NOT_OBSERVED_FLOOR_AF,
         "versions": {"python": platform.python_version(), "numpy": np.__version__, "xgboost": xgb.__version__},
         "seconds": time.time() - started,
         "limits": [
             "This path calls live external services at request time and is far less verified than predict_variants.py's frozen-cache path.",
-            "ensembl_conservation uses UCSC phyloP100way as a documented substitute for the original (unaudited) Ensembl GERP-style score — different scale, not a reproduction.",
+            "ensembl_conservation has no verified live source; dependent models are blocked. UCSC phyloP100way is reference-only, never a model input.",
             "The VEP transcript-selection 'target-gene' preference tier is not reproduced (the original gene panel list was not preserved); MANE Select > canonical > protein-coding > any is used instead.",
             "No calibrated probabilities. No external validation of this live path exists yet — see PROJECT_STATUS.md.",
         ],
