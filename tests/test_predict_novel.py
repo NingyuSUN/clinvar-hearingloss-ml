@@ -10,7 +10,7 @@ unless RUN_NETWORK_TESTS=1 is set:
     RUN_NETWORK_TESTS=1 python -m pytest tests/test_predict_novel.py -v
 
 They were passing, with every value below matching the frozen cache exactly
-except ensembl_conservation (a deliberate, documented substitution — see
+except conservation (now reference-only; never a model substitute — see
 docs/predict_novel.md), when this file was written.
 """
 
@@ -87,17 +87,13 @@ def test_gpn_star_matches_the_frozen_cache_exactly():
 
 def test_conservation_returns_a_finite_value_but_is_not_the_original_source():
     cons = ls.fetch_conservation(CHROM, POS)
-    value = cons["ensembl_conservation"]["value"]
-    assert value is not None
-    # This is the UCSC phyloP substitute, not the original 1.71 GERP-style
-    # value in the frozen cache — different source, different scale, on
-    # purpose. This test only asserts it returns *something* usable.
-    assert isinstance(value, float)
+    assert cons["ensembl_conservation"]["value"] is None
+    assert cons["ensembl_conservation"]["status"] == "unverified_source"
+    assert isinstance(cons["ucsc_phyloP100way_reference"]["value"], float)
 
 
 def test_end_to_end_novel_scoring_without_alphagenome_key(tmp_path):
-    """predict_novel.py should score the three non-AVI models and cleanly
-    report the two AVI-dependent models as missing when no key is given."""
+    """Only GPN3 scores; unresolved conservation blocks the other models."""
     import subprocess
 
     input_csv = tmp_path / "variants.csv"
@@ -123,13 +119,13 @@ def test_end_to_end_novel_scoring_without_alphagenome_key(tmp_path):
     record = json.loads((output_dir / "predictions.jsonl").read_text().splitlines()[0])
     assert record["variant_type"] == "missense"
     assert record["gene_symbols"] == [GENE]
-    for name in ("ORIGINAL18", "GPN3", "ORIGINAL18_GPN"):
+    for name in ("GPN3",):
         assert record["models"][name]["status"] == "scored_research"
         assert record["models"][name]["probability"] is None
-    for name in ("FULL_UNIFIED", "FULL_STRATIFIED"):
+    for name in ("ORIGINAL18", "ORIGINAL18_GPN", "FULL_UNIFIED", "FULL_STRATIFIED"):
         assert record["models"][name]["status"] == "missing_or_invalid_features"
         assert record["models"][name]["score"] is None
 
     manifest = json.loads((output_dir / "run_manifest.json").read_text())
     assert manifest["alphagenome_requested"] is False
-    assert any("substitute" in limit for limit in manifest["limits"])
+    assert any("dependent models are blocked" in limit for limit in manifest["limits"])

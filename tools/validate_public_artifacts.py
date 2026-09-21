@@ -136,7 +136,6 @@ def check_no_stray_bytecode(problems: list[str]) -> None:
                 ["git", "ls-files", "--error-unmatch", str(path)],
                 cwd=REPO_ROOT,
                 capture_output=True,
-                text=True,
             )
             if out.returncode == 0:
                 fail(problems, f"__pycache__ directory is tracked by git: {path}")

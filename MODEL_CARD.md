@@ -8,8 +8,8 @@ cross-validation so that the reported performance cannot come from the model
 having memorised a gene it saw at training time. The headline gene-held-out
 AUC (0.930) is markedly lower than the same model's AUC under an ordinary
 random split (0.996) — that ~0.07 gap is the study's central finding, not a
-footnote: most of a naive evaluation's apparent accuracy is the model
-recognising the gene, not learning variant-level pathogenicity signal.
+footnote: the split comparison shows sensitivity to gene overlap, but does not by
+itself identify the mechanism behind the entire performance gap.
 
 This is a research/portfolio project, not a validated clinical tool. See
 `docs/limitations.md` for the full limitations list.
@@ -24,11 +24,10 @@ distinct entry points with very different guarantees:
   hash-verified frozen annotation cache (`docs/predict.md`).
 - `predict_novel.py` — annotates a genuinely new variant **live**, by calling
   Ensembl VEP, gnomAD, a public GPN-Star lookup, and optionally the
-  AlphaGenome API with your own key, then scores it the same way
+  AlphaGenome API with your own key, then applies the feature contract
   (`docs/predict_novel.md`). This path is much less verified than the
-  cache-only one: it has had no external validation, one feature
-  (conservation) uses a documented substitute source rather than the
-  original, and it needs live network access.
+  cache-only one: it has had no external validation, the original conservation source remains unresolved, so only GPN3 can
+  currently score compatible live inputs. The other four models are blocked.
 
 ## Intended use
 
@@ -52,15 +51,14 @@ distinct entry points with very different guarantees:
 - Not validated on any cohort outside the ClinVar hearing-loss gene panel used
   here, and not re-evaluated against newer ClinVar releases.
 - The R90 (90% recall) operating point is a single global threshold; per
-  `README.md` it hides a large per-consequence-class gap (missense recall
+  `README.md` it hides a large per-consequence-class gap (coding non-truncating recall
   ~53% vs. truncating recall ~99.7%) and must not be read as a uniform
   90%-recall guarantee across variant classes.
 - **Not a clinical annotation service, cache-hit or not.** `predict_variants.py`
   returns null on all five models for anything outside its frozen cache,
   rather than fabricating a plausible-looking number. `predict_novel.py` can
   score a genuinely new variant, but has had no external validation of its
-  own and substitutes a different conservation source than the one the models
-  were trained on — see `docs/predict_novel.md` before reading anything into
+  own and blocks the four models needing an unresolved conservation source — see `docs/predict_novel.md` before reading anything into
   its output. Neither path ever reports a calibrated probability, and both
   only report a directional research call for missense variants.
 
@@ -80,17 +78,23 @@ distinct entry points with very different guarantees:
 
 See `README.md` and `docs/results.md` for full tables. Headline numbers:
 
-| Evaluation | AUC | 95% CI |
-|---|---:|---:|
-| Gene-held-out (the number that matters) | **0.930** | 0.924 – 0.936 |
-| Ordinary random split (shown to illustrate leakage) | 0.996 | 0.995 – 0.997 |
-| Coding non-truncating subset, gene-held-out | 0.814 | 0.800 – 0.829 |
+| Evaluation | Pooled AUC [conditional 95% interval] |
+|---|---:|
+| Gene-held-out | **0.930 [0.892, 0.974]** |
+| Ordinary random split | 0.996 [0.994, 0.998] |
+| Coding non-truncating subset, gene-held-out | 0.815 [0.702, 0.920] |
+
+These intervals use 2,000 whole-gene-group draws with fixed OOF predictions;
+they omit refitting and full CV prediction dependence. Historical row-bootstrap
+intervals are superseded for inference. See the
+[statistical revision](docs/statistical_revision.md). These results establish
+neither clinical probability calibration nor independent external validity.
 
 ## Limitations and risks
 
 - A model using only the four consequence-class flags already reaches
-  AUC 0.85 on the full cohort; most of the full-cohort 0.93 is loss-of-function
-  identification, not fine-grained pathogenicity discrimination.
+  AUC 0.85 on the full cohort. Consequence categories are strongly associated
+  with the labels; their share of the full-model AUC is not identified by this comparison.
 - Allele frequency is the dominant feature on the harder (coding
   non-truncating) subset, and ClinVar's own benign calls use frequency-based
   ACMG rules (`BA1`/`BS1`) — part of that signal is the model re-deriving the
@@ -104,9 +108,8 @@ See `README.md` and `docs/results.md` for full tables. Headline numbers:
   the "coding non-truncating" cohort's occurrences of "missense" throughout
   the docs, since that 3,121-row subset is actually 1,329 missense / 1,733
   synonymous / 59 other coding variants, not pure missense. That commit was
-  reverted on 2026-09-18 pending author review (see `CHANGELOG.md`); readers
-  should not assume the current README wording is the final word on this
-  point.
+  reverted on 2026-09-18 pending author review (see `CHANGELOG.md`); the current README and results discussion use the broader cohort name.
+  Historical filenames are retained; strict-missense re-evaluation is separate.
 
 ## Release decision
 

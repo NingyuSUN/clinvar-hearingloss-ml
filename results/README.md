@@ -1,15 +1,25 @@
-# results/
+# Results archive
 
-Frozen-run outputs cited by `README.md` and `docs/results.md`. Re-running
-`scripts/run_evaluation.py` then `scripts/analyze_results.py` overwrites these
-with near-identical numbers (the bootstrap CI moves at the third decimal).
+Root-level numeric files preserve the historical frozen run. Do not overwrite
+them when reproducing or revising statistics; use a new run directory.
 
-| File | Contents |
-|---|---|
-| `ladder_headline.csv` / `ladder_missense.csv` | additive feature ladder, per-fold AUC |
-| `paired_ladder_headline.csv` / `paired_ladder_missense.csv` | paired per-fold Δ and t for each ladder step |
-| `bootstrap_ci.csv` | patient-level bootstrap 95% CI, per cohort and feature set |
-| `stratified_headline.csv` | headline-model recall / precision by consequence class |
-| `split_gap.csv` | gene-held-out vs random-split pooled AUC |
-| `pooled_oof_by_cohort.csv` | pooled out-of-fold confusion, per cohort |
-| `run_manifest.json` | XGBoost version, seeds, matrix hash |
+- `ladder_headline.csv` / `ladder_missense.csv`: descriptive per-fold AUC.
+- `paired_ladder_*.csv`: historical differences and **uncorrected t statistics**;
+  their significance flags are superseded and must not support current claims.
+- `bootstrap_ci.csv` / `summary.json`: historical **variant-row** bootstrap,
+  not patient bootstrap; their intervals omit within-gene dependence.
+- `stratified_headline.csv`: consequence-stratified recall and precision.
+- `split_gap.csv`: seed-averaged pooled AUC comparison.
+- `pooled_oof_by_cohort.csv`: means of per-seed pooled metrics, a different aggregation.
+- `run_manifest.json`: original training provenance.
+
+See [statistical revision](../docs/statistical_revision.md) for the replacement
+method, versioned outputs and execution status. Historical `missense` filenames
+refer to the coding non-truncating subset.
+
+## Revised statistics
+
+`statistics_20260921/` contains the completed post hoc reanalysis of the same
+frozen OOF predictions: conditional whole-gene-group intervals, descriptive
+paired effects and a provenance manifest. No models were retrained. See the
+[revision report](../docs/statistical_revision.md) before interpreting the intervals.
