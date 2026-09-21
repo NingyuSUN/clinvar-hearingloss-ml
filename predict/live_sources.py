@@ -7,18 +7,13 @@ downloader score a variant this repository has never seen before, at the
 cost of much weaker guarantees. Read docs/predict_novel.md before trusting
 its output.
 
-Each fetch function was validated against a real cached variant
-(16-2496587-G-C / TBC1D24, "variant 48" in predict/examples) before this
-module was written: VEP transcript selection, domain curation, gnomAD AF,
-gnomAD gene constraint, and all three GPN-Star scores reproduced the frozen
-cache's values exactly. The one deliberate exception is conservation — see
-`fetch_conservation` below.
+Historical single-variant spot checks are not external validation. The live
+conservation track is reference-only and cannot fill the training feature.
 """
 
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
 
 import requests
 
@@ -50,17 +45,39 @@ class AnnotationError(Exception):
     """A live source could not be resolved for this variant. Carries a short machine-readable reason."""
 
 
-@dataclass
-class NovelAnnotation:
-    variant_type: str | None = None
-    gene_symbols: list[str] = field(default_factory=list)
-    transcript_id: str | None = None
-    features: dict = field(default_factory=dict)
-    warnings: list[str] = field(default_factory=list)
+# Frozen transform from src/hlpath/protocol.py; checked against the bundle.
+NOT_OBSERVED_FLOOR_AF = 1.0 / 1_600_000
 
 
 def _obs(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+        raise AnnotationError("invalid_numeric")
     return {"value": value, "status": "observed"}
+
+
+def _request_json(method, source, url, **kwargs):
+    try:
+        response = getattr(requests, method)(url, **kwargs)
+        if response.status_code != 200:
+            raise AnnotationError(f"{source}_http_{response.status_code}")
+        return response.json()
+    except requests.RequestException as exc:
+        raise AnnotationError(f"{source}_transport_error") from exc
+    except ValueError as exc:
+        raise AnnotationError(f"{source}_invalid_json") from exc
+
+
+def _graphql(payload, key):
+    # HTTP 200 may still carry execution errors, including partial data.
+    if not isinstance(payload, dict) or ("errors" in payload):
+        raise AnnotationError("gnomad_graphql_error")
+    data = payload.get("data")
+    if not isinstance(data, dict) or key not in data:
+        raise AnnotationError("gnomad_invalid_response")
+    value = data[key]
+    if value is not None and not isinstance(value, dict):
+        raise AnnotationError("gnomad_invalid_response")
+    return value
 
 
 def fetch_vep(chrom: str, pos: int, ref: str, alt: str, timeout: float = 15.0) -> dict:
@@ -75,28 +92,33 @@ def fetch_vep(chrom: str, pos: int, ref: str, alt: str, timeout: float = 15.0) -
     deliberate simplification, not a guarantee.
     """
     region = f"{chrom}:{pos}-{pos}:1"
-    resp = requests.get(
+    payload = _request_json("get", "vep",
         f"{ENSEMBL_REST}/vep/human/region/{region}/{alt}",
         params={"content-type": "application/json", "domains": 1, "canonical": 1, "mane": 1},
         headers={"Content-Type": "application/json"},
         timeout=timeout,
     )
-    if resp.status_code != 200:
-        try:
-            detail = resp.json().get("error", "")
-        except ValueError:
-            detail = resp.text[:200]
-        # A very common cause here: the supplied `ref` does not match the
-        # actual GRCh38 reference base at this position (VEP reports this as
-        # "request for consequence of [ALT] matches reference [ALT]" when the
-        # caller's ref/alt are swapped or simply wrong). Surface VEP's own
-        # message rather than just the status code.
-        raise AnnotationError(f"vep_http_{resp.status_code}:{detail}")
-    payload = resp.json()
-    if not payload or "transcript_consequences" not in payload[0]:
+    if not isinstance(payload, list) or len(payload) != 1 or not isinstance(payload[0], dict):
+        raise AnnotationError("vep_invalid_response")
+    record = payload[0]
+    expected = {"assembly_name": "GRCh38", "seq_region_name": chrom,
+                "start": pos, "end": pos, "strand": 1, "allele_string": f"{ref}/{alt}"}
+    if any(record.get(key) != value for key, value in expected.items()):
+        raise AnnotationError("vep_variant_identity_mismatch")
+    transcripts = record.get("transcript_consequences")
+    if not isinstance(transcripts, list) or not transcripts:
         raise AnnotationError("vep_no_transcript_consequences")
-
-    transcripts = payload[0]["transcript_consequences"]
+    for tc in transcripts:
+        if not isinstance(tc, dict):
+            raise AnnotationError("vep_invalid_transcript")
+        terms = tc.get("consequence_terms")
+        domains = tc.get("domains", [])
+        if (not isinstance(terms, list) or not terms or any(not isinstance(t, str) for t in terms)
+                or not isinstance(tc.get("transcript_id"), str)
+                or not isinstance(domains, list)
+                or any(not isinstance(d, dict) or not isinstance(d.get("db"), str) or not d["db"] for d in domains)
+                or (tc.get("gene_symbol") is not None and not isinstance(tc["gene_symbol"], str))):
+            raise AnnotationError("vep_invalid_transcript")
 
     def rank(tc):
         return (
@@ -146,18 +168,16 @@ def fetch_gnomad_af(chrom: str, pos: int, ref: str, alt: str, timeout: float = 1
     }
     """
     variant_id = f"{chrom}-{pos}-{ref}-{alt}"
-    resp = requests.post(
+    payload = _request_json("post", "gnomad",
         GNOMAD_API,
         json={"query": query, "variables": {"variantId": variant_id, "dataset": "gnomad_r4"}},
         timeout=timeout,
     )
-    if resp.status_code != 200:
-        raise AnnotationError(f"gnomad_http_{resp.status_code}")
-    data = resp.json().get("data", {}).get("variant")
+    data = _graphql(payload, "variant")
 
     if data is None:
         # Confirmed absent from gnomAD v4 (docs/data.md's NOT_IN_GNOMAD_R4 case).
-        floor = math.log10(1 / (2 * 1_614_000) + 1e-8)  # 2*N_max is dataset-scale; this floor is an approximation, not the frozen exact value
+        floor = math.log10(NOT_OBSERVED_FLOOR_AF + 1e-8)
         return {
             "p4_freq_log10": _obs(floor),
             "p2_af_known_missing": _obs(0.0),
@@ -165,11 +185,28 @@ def fetch_gnomad_af(chrom: str, pos: int, ref: str, alt: str, timeout: float = 1
             "p2_low_an_flag": _obs(0.0),
         }
 
-    candidates = [(part["af"], part.get("an", 0)) for part in (data.get("genome"), data.get("exome")) if part and not part.get("filters")]
+    candidates = []
+    for key in ("genome", "exome"):
+        if key not in data:
+            raise AnnotationError("gnomad_incomplete_frequency_response")
+        part = data[key]
+        if part is None:
+            continue
+        if not isinstance(part, dict) or not isinstance(part.get("filters"), list):
+            raise AnnotationError("gnomad_invalid_filters")
+        if any(not isinstance(f, str) for f in part["filters"]):
+            raise AnnotationError("gnomad_invalid_filters")
+        if part["filters"]:
+            continue
+        af, an = part.get("af"), part.get("an")
+        if (isinstance(af, bool) or not isinstance(af, (int, float)) or not math.isfinite(af)
+                or not 0 <= af <= 1 or type(an) is not int or an <= 0):
+            raise AnnotationError("gnomad_invalid_frequency")
+        candidates.append((af, an))
     if not candidates:
         # Present but filtered/non-PASS everywhere this query looked.
         return {
-            "p4_freq_log10": {"value": None, "status": "frozen_missing"},
+            "p4_freq_log10": {"value": None, "status": "filtered_or_unavailable"},
             "p2_af_known_missing": _obs(1.0),
             "p2_not_observed_in_gnomad_r4": _obs(0.0),
             "p2_low_an_flag": _obs(0.0),
@@ -193,60 +230,60 @@ def fetch_gnomad_constraint(gene_symbol: str, timeout: float = 15.0) -> dict:
       }
     }
     """
-    resp = requests.post(GNOMAD_API, json={"query": query, "variables": {"gene": gene_symbol}}, timeout=timeout)
-    if resp.status_code != 200:
-        raise AnnotationError(f"gnomad_constraint_http_{resp.status_code}")
-    gene = resp.json().get("data", {}).get("gene")
-    constraint = (gene or {}).get("gnomad_constraint")
-    if not constraint or constraint.get("oe_lof_upper") is None or constraint.get("oe_mis_upper") is None:
-        return {
-            "p3_gene_constraint_oe_lof_upper": {"value": None, "status": "missing"},
-            "p3_gene_constraint_oe_mis_upper": {"value": None, "status": "missing"},
-        }
-    return {
-        "p3_gene_constraint_oe_lof_upper": _obs(float(constraint["oe_lof_upper"])),
-        "p3_gene_constraint_oe_mis_upper": _obs(float(constraint["oe_mis_upper"])),
-    }
+    payload = _request_json("post", "gnomad_constraint", GNOMAD_API,
+                            json={"query": query, "variables": {"gene": gene_symbol}}, timeout=timeout)
+    gene = _graphql(payload, "gene")
+    if gene is not None and "gnomad_constraint" not in gene:
+        raise AnnotationError("gnomad_constraint_invalid_response")
+    constraint = gene["gnomad_constraint"] if gene is not None else None
+    if constraint is not None and not isinstance(constraint, dict):
+        raise AnnotationError("gnomad_constraint_invalid_response")
+    out = {}
+    for key in ("oe_lof_upper", "oe_mis_upper"):
+        if constraint is not None and key not in constraint:
+            raise AnnotationError("gnomad_constraint_invalid_response")
+        value = constraint[key] if constraint is not None else None
+        name = "p3_gene_constraint_" + key
+        if value is None:
+            out[name] = {"value": None, "status": "missing"}
+        else:
+            out[name] = _obs(value)
+            if value < 0:
+                raise AnnotationError("gnomad_constraint_invalid_numeric")
+    return out
 
 
 def fetch_conservation(chrom: str, pos: int, timeout: float = 15.0) -> dict:
-    """UCSC phyloP (100-way vertebrate) at this position, via UCSC's public REST API.
-
-    This is a DELIBERATE SUBSTITUTE for the frozen cache's `ensembl_conservation`
-    feature. The original feature's provenance was never fully documented in
-    this repository (docs/limitations.md), and Ensembl's own GERP conservation
-    score has no REST endpoint — only the Compara Perl API or raw packed-binary
-    MySQL access, both impractical to ask a downloader to set up. phyloP and
-    GERP are related but not the same score, on different scales; do not treat
-    this feature as reproducing the training data's original values.
-    """
-    resp = requests.get(
-        UCSC_API,
+    """Fetch a reference-only phyloP track; never substitute it into a model."""
+    payload = _request_json("get", "ucsc", UCSC_API,
         params={"genome": "hg38", "track": "phyloP100way", "chrom": f"chr{chrom}", "start": pos - 1, "end": pos},
-        timeout=timeout,
-    )
-    if resp.status_code != 200:
-        raise AnnotationError(f"ucsc_http_{resp.status_code}")
-    rows = resp.json().get("phyloP100way") or []
-    if not rows:
-        return {"ensembl_conservation": {"value": None, "status": "missing"}}
-    return {"ensembl_conservation": _obs(float(rows[0]["value"]))}
+        timeout=timeout)
+    if not isinstance(payload, dict) or not isinstance(payload.get("phyloP100way"), list):
+        raise AnnotationError("ucsc_invalid_response")
+    rows = payload["phyloP100way"]
+    out = {"ensembl_conservation": {"value": None, "status": "unverified_source"},
+           "ucsc_phyloP100way_reference": {"value": None, "status": "missing"}}
+    if rows:
+        if len(rows) != 1 or not isinstance(rows[0], dict) or "value" not in rows[0]:
+            raise AnnotationError("ucsc_invalid_response")
+        out["ucsc_phyloP100way_reference"] = _obs(rows[0]["value"])
+    return out
 
 
-def fetch_gpn_star(chrom: str, pos: int, ref: str, alt: str, timeout: float = 30.0) -> dict:
+def fetch_gpn_star(chrom: str, pos: int, ref: str, alt: str) -> dict:
     """The three GPN-Star LLR scores, via a remote Parquet row lookup (no local model, no GPU).
 
     Requires `polars`. Uses `songlab/gpn-star-scores` on Hugging Face — the
     exact same public precomputed dataset the frozen cache's gpn_v100/m447/p243
     values came from.
     """
-    import polars as pl
-
     checkpoints = {"gpn_v100": "gpn-star-hg38-v100-200m", "gpn_m447": "gpn-star-hg38-m447-200m", "gpn_p243": "gpn-star-hg38-p243-200m"}
     out = {}
     for feature_name, dataset in checkpoints.items():
         path = f"{GPN_STAR_ROOT}/{dataset}/llr/llr_chr{chrom}.parquet"
         try:
+            import polars as pl
+
             row = (
                 pl.scan_parquet(path)
                 .filter((pl.col("pos") == pos) & (pl.col("ref") == ref) & (pl.col("alt") == alt))
@@ -258,7 +295,12 @@ def fetch_gpn_star(chrom: str, pos: int, ref: str, alt: str, timeout: float = 30
         if row.is_empty():
             out[feature_name] = {"value": None, "status": "missing"}
         else:
-            out[feature_name] = _obs(float(row["llr_calibrated"][0]))
+            try:
+                if row.height != 1:
+                    raise AnnotationError("gpn_ambiguous_match")
+                out[feature_name] = _obs(float(row["llr_calibrated"][0]))
+            except Exception as exc:  # per-feature boundary includes Polars schema errors
+                out[feature_name] = {"value": None, "status": "missing", "error": str(exc)[:200]}
     return out
 
 

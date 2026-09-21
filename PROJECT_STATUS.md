@@ -3,7 +3,8 @@
 **Status: ongoing research.** The frozen headline protocol (`P4-LABEL-SPLIT-THRESHOLD-2026-09-10`)
 has been run once and is reported in `README.md` / `docs/results.md`; the
 project is not closed, and open questions below are tracked as follow-on work
-rather than known bugs.
+separately from the published run. The [documentation review](docs/validation_status.md)
+clarifies cohort terminology, metric aggregation, and unresolved validation issues.
 
 ## Completion checklist
 
@@ -21,22 +22,17 @@ rather than known bugs.
       report generator, covering the ~4,050-variant frozen cache; verified
       byte-identical to the original engineering pass's output before being
       folded into this repo (see `CHANGELOG.md`).
-- [x] Live-annotation pipeline for genuinely novel variants (`predict_novel.py`):
-      real-time Ensembl VEP + gnomAD v4.1.1/v2.1.1 + a public GPN-Star lookup
-      (no local model or GPU needed) + an optional AlphaGenome API call with
-      the user's own key. Every reproducible feature checked against the
-      frozen cache matched exactly except conservation, which uses UCSC
-      phyloP as a documented substitute for the original, never-fully-audited
-      Ensembl GERP-style score — see `docs/predict_novel.md`. This path has
-      had **no independent external validation** and is explicitly weaker
-      than the cache-only path, not a replacement for it.
+- [x] Experimental live annotation with offline failure regression tests:
+      HTTP/GraphQL errors, variant identity, frozen AF transform, held-out-group
+      integrity and honest cache membership. Only GPN3 can score compatible
+      live inputs; the four conservation-dependent models are blocked.
+      UCSC phyloP is reference-only. No independent external validation or
+      new live service verification is claimed; see `docs/predict_novel.md`.
 - [ ] Probability calibration and independent external-label validation for
       the `predict/` models (both cache-only and live-annotated); scores are
       currently uncalibrated by design.
-- [ ] Reconstruct the original `ensembl_conservation` provenance well enough
-      to either confirm or replace the UCSC phyloP substitute used by
-      `predict_novel.py` with something closer to the training data's actual
-      source.
+- [ ] Reconstruct and validate the original `ensembl_conservation` source
+      before enabling conservation-dependent models for live variants.
 - [ ] `predict_novel.py`'s VEP transcript selection skips the frozen
       pipeline's "target-gene" preference tier (the internal gene-panel list
       it depended on wasn't preserved); it currently uses MANE Select >
@@ -59,11 +55,21 @@ intended to be used as, a clinical decision-support tool.
 ## Evidence snapshot
 
 - Headline: 7,125 variants, 167 gene groups, gene-held-out AUC 0.930
-  (0.924–0.936) vs. random-split AUC 0.996 (0.995–0.997).
-- Coding non-truncating subset (N=3,121): gene-held-out AUC 0.814
-  (0.800–0.829).
+  vs. random-split AUC 0.996. The revised conditional headline interval is
+  0.892–0.974; the coding non-truncating interval is 0.702–0.920.
+- Coding non-truncating subset (N=3,121): gene-held-out AUC 0.815
+  (empirical point estimate; historical row-bootstrap mean rounded to 0.814).
 - A four-consequence-flag-only model already reaches AUC 0.85 on the full
-  cohort — most of the 0.93 headline is loss-of-function identification.
+  cohort, indicating strong consequence-category separation without quantifying
+  its share of the full-model AUC.
+
+## Validation follow-up
+
+- [x] Implement conditional gene-group intervals and descriptive paired comparisons.
+- [x] Execute and verify the frozen-prediction reanalysis (5 cohorts, 2,000
+      gene-group draws each); see [statistical revision](docs/statistical_revision.md).
+- [ ] Add regression checks for live-source errors, REF validation, and
+      training/inference feature parity.
 
 ## Optional future research
 

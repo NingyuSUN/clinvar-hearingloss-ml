@@ -49,7 +49,8 @@ def main() -> None:
         per_fold, oof = _load(d, tag)
         p = pooled_oof_table(per_fold, oof, "L6_full", args.boot)
         sens_rows.append({"cohort": tag, "n_variants": p["n_variants"],
-                          **{f"AUC_{k}": round(v, 4) for k, v in p["bootstrap_ci"]["AUC"].items()}})
+                          **{f"AUC_{k}": p["bootstrap_ci"]["AUC"][k]
+                             for k in ["estimate", "lo", "hi", "n_valid", "status"]}})
     pd.DataFrame(sens_rows).to_csv(d / "review_status_sensitivity.csv", index=False)
     summary["review_status_sensitivity"] = sens_rows
 

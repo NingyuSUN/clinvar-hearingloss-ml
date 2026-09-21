@@ -23,11 +23,10 @@ found that a caller-supplied source name and file hash were being treated as
 proof that the annotation was genuine, when they only proved internal
 consistency. That let fabricated features get scored as if they were real. The
 fix was to lock inference to the verified cache and make any unverified input
-return null rather than a plausible-looking number. Building a genuine
-live-annotation pipeline (real-time VEP, gnomAD, GPN inference, and an
-AlphaGenome call for a variant nobody has annotated before) is real,
-substantial future work, not something bolted on here — see
-[`PROJECT_STATUS.md`](../PROJECT_STATUS.md).
+return null rather than a plausible-looking number. A separate experimental
+[live annotation entrypoint](predict_novel.md) now exists. It queries public
+annotations and precomputed GPN scores, but blocks models whose conservation
+feature cannot be reconstructed. It does not expand this cache-only contract.
 
 ## The five models
 

@@ -118,7 +118,8 @@ def _one_fold(data, feats, outer, inner, out_fold, seed):
         "VariationID": te["VariationID"].to_numpy(), "y": yte, "prob": pte,
         "seed": seed, "outer_fold": out_fold,
         "GeneSymbol": te["GeneSymbol"].to_numpy(),
-        "gene_group": te["_grp"].to_numpy(),
+        "gene_group": te["p4_gene_group"].astype(str).to_numpy(),
+        "split_group": te["_grp"].to_numpy(),
         "consequence_class": te["consequence_class"].to_numpy(),
         "review_star": te["p4_review_star"].to_numpy(),
     })

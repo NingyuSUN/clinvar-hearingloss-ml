@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased — statistical reporting and project workflows
+
+- Require biological groups for conditional cluster-bootstrap intervals. Output
+  `estimate` and `bootstrap_mean` separately, plus valid-draw counts and status;
+  the historical `mean` field is no longer the point estimate.
+- Replace uncorrected paired-fold t tests and significance flags with descriptive
+  effects; reject duplicated or unmatched fold comparisons.
+- Validate OOF identity, coverage, labels and thresholds before aggregation.
+  Preserve biological groups separately from random split identifiers.
+- Add a frozen-data reanalysis adapter with reference checks and input/code/output
+  hashes. Historical numeric results are preserved; see
+  [execution status](docs/statistical_revision.md) before citing revised intervals.
+- Shorten the README, add an evaluation diagram and clarify calibration/external
+  validation boundaries and coding non-truncating cohort terminology.
+
 ## 2026-09-18 — Add live annotation for genuinely novel variants (`predict_novel.py`)
 
 - Added `predict/live_sources.py` and `predict/predict_novel.py`: a second
@@ -136,3 +151,11 @@
 ## 2026-05-20 — Initial upload
 
 - First commit of data, scripts and README.
+
+## 2026-09-21 — live annotation contract repair
+
+- Separate API errors from verified absence; validate VEP variant identity and AF/constraint payloads.
+- Match the frozen absent-frequency transform and enforce held-out model groups.
+- Keep unknown membership unknown and preserve failed input rows.
+- Block conservation-dependent live models; phyloP is reference-only.
+- Add offline regressions; frozen models and cached predictions are unchanged.

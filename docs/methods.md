@@ -98,13 +98,40 @@ when the validation set is single-class or the scores are not finite.
 `GeneSymbol` is never a feature. The ablation adds these groups one at a time and
 also removes each group from the full model (`FEATURE_SETS` in `protocol.py`).
 
-## Statistics
+## Statistics — revised reporting
 
-- The mean ± SD across the 50 (10 seeds × 5 folds) values is **not** a confidence
-  interval — the training sets overlap heavily (Nadeau & Bengio 2003). A
-  **patient-level bootstrap** (2,000 resamples of the variants) on the pooled
-  out-of-fold predictions is used for CIs.
-- Ladder steps are compared with a **paired per-fold difference** and its
-  paired-t statistic, not by comparing a mean delta to the marginal SD.
-- Alongside the row-weighted pooled AUC, a gene-group-macro AUC (unweighted over
-  gene groups) is reported.
+The original model-fitting protocol above is unchanged. The 2026-09-21
+post hoc statistical revision changes uncertainty estimation and reporting:
+
+- Average OOF scores across seeds once per variant. Apply each original fold's
+  validation-selected threshold before voting; a vote of exactly 0.5 is positive,
+  preserving the historical rule. This is a repeated-OOF summary, not evaluation
+  of a single deployed model.
+- Report the empirical pooled AUC, recall and precision as point estimates.
+  The bootstrap mean is a separate diagnostic, not the point estimate.
+- Resample biological gene-associated groups as whole clusters, with replacement,
+  for 2,000 draws. Each draw samples G groups and retains all their variants,
+  including repeated copies when a group is sampled repeatedly. Metrics remain
+  variant-weighted; cluster sizes and total variant counts can vary by draw.
+- Report percentile 95% intervals conditional on fixed models and predictions.
+  This preserves within-group dependence but does not capture retraining,
+  model-selection uncertainty or all dependence induced by overlapping CV fits.
+  It is not a confidence interval for clinical performance on new cohorts.
+- Count undefined draws per metric. AUC requires both classes, recall requires
+  positives and precision requires positive calls. An interval is withheld if
+  fewer than 100 or fewer than 90% of requested draws are valid.
+- Compare feature sets using matched-fold mean differences and descriptive SDs.
+  Seed-mean ranges are descriptive too. No independent-fold standard error,
+  t statistic, p-value or significance flag is produced. No equivalence claim
+  follows from a small or inconsistent difference.
+- Validate one prediction per variant per seed, complete seed/fold coverage,
+  stable labels/groups, finite successful thresholds and recorded test counts.
+  The frozen-data adapter additionally checks the original 10 × 5 protocol,
+  gene isolation and alignment between compared models.
+
+Historical row-bootstrap intervals and uncorrected t statistics remain archived
+under `results/`; they are superseded for inference. New outputs are versioned
+separately. See [statistical revision](statistical_revision.md) for execution status.
+
+Methodological context: [cluster bootstrap for correlated ROC data](https://pmc.ncbi.nlm.nih.gov/articles/PMC8586066/)
+and [dependence in repeated-CV comparisons](https://scikit-learn.org/1.5/auto_examples/model_selection/plot_grid_search_stats.html).

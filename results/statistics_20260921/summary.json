@@ -1,0 +1,259 @@
+{
+  "schema_version": "2.0",
+  "analysis": "conditional_gene_group_bootstrap",
+  "training_performed": false,
+  "cohorts": {
+    "headline": {
+      "feature_set": "L6_full",
+      "n_variants": 7125,
+      "bootstrap_ci": {
+        "AUC": {
+          "estimate": 0.9300532399396623,
+          "bootstrap_mean": 0.9336462920845379,
+          "lo": 0.8921986251642225,
+          "hi": 0.9744571543595825,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "R90_recall": {
+          "estimate": 0.8450782997762863,
+          "bootstrap_mean": 0.8439961948066989,
+          "lo": 0.7999961459403906,
+          "hi": 0.8876903104374497,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "R90_precision": {
+          "estimate": 0.8548797736916549,
+          "bootstrap_mean": 0.857464098764166,
+          "lo": 0.6994977241603038,
+          "hi": 0.9716811454601179,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "metadata": {
+          "method": "gene_group_cluster_percentile",
+          "confidence_level": 0.95,
+          "n_groups": 167,
+          "n_variants": 7125,
+          "n_boot": 2000,
+          "seed": 0,
+          "estimand": "variant_weighted_metrics_of_fixed_seed_averaged_oof_predictions",
+          "scope": "conditional_on_fitted_models_and_observed_groups; no_refitting",
+          "undefined_draws": "AUC: missing label class; recall: no positives; precision: no calls"
+        }
+      },
+      "confusion": {
+        "TP": 3022,
+        "FP": 513,
+        "TN": 3036,
+        "FN": 554
+      }
+    },
+    "coding_nontruncating": {
+      "feature_set": "L6_full",
+      "n_variants": 3121,
+      "bootstrap_ci": {
+        "AUC": {
+          "estimate": 0.8147647101227954,
+          "bootstrap_mean": 0.820946185847411,
+          "lo": 0.7015433792330098,
+          "hi": 0.9201369214005138,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "R90_recall": {
+          "estimate": 0.910010111223458,
+          "bootstrap_mean": 0.9092749608020977,
+          "lo": 0.8578451792068038,
+          "hi": 0.9513301902796234,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "R90_precision": {
+          "estimate": 0.5253940455341506,
+          "bootstrap_mean": 0.5393610224539741,
+          "lo": 0.3304014244304246,
+          "hi": 0.7711169304081998,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "metadata": {
+          "method": "gene_group_cluster_percentile",
+          "confidence_level": 0.95,
+          "n_groups": 148,
+          "n_variants": 3121,
+          "n_boot": 2000,
+          "seed": 0,
+          "estimand": "variant_weighted_metrics_of_fixed_seed_averaged_oof_predictions",
+          "scope": "conditional_on_fitted_models_and_observed_groups; no_refitting",
+          "undefined_draws": "AUC: missing label class; recall: no positives; precision: no calls"
+        }
+      },
+      "confusion": {
+        "TP": 900,
+        "FP": 813,
+        "TN": 1319,
+        "FN": 89
+      }
+    },
+    "random_split": {
+      "feature_set": "L6_full",
+      "n_variants": 7125,
+      "bootstrap_ci": {
+        "AUC": {
+          "estimate": 0.9962977566230018,
+          "bootstrap_mean": 0.996085643407748,
+          "lo": 0.9937619484823321,
+          "hi": 0.9978262506517981,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "R90_recall": {
+          "estimate": 0.9054809843400448,
+          "bootstrap_mean": 0.90352899460918,
+          "lo": 0.8684896938568866,
+          "hi": 0.9311385923138432,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "R90_precision": {
+          "estimate": 0.9932515337423313,
+          "bootstrap_mean": 0.9931467526985399,
+          "lo": 0.9871446550331757,
+          "hi": 0.9971028738372788,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "metadata": {
+          "method": "gene_group_cluster_percentile",
+          "confidence_level": 0.95,
+          "n_groups": 167,
+          "n_variants": 7125,
+          "n_boot": 2000,
+          "seed": 0,
+          "estimand": "variant_weighted_metrics_of_fixed_seed_averaged_oof_predictions",
+          "scope": "conditional_on_fitted_models_and_observed_groups; no_refitting",
+          "undefined_draws": "AUC: missing label class; recall: no positives; precision: no calls"
+        }
+      },
+      "confusion": {
+        "TP": 3238,
+        "FP": 22,
+        "TN": 3527,
+        "FN": 338
+      }
+    },
+    "all_tier": {
+      "feature_set": "L6_full",
+      "n_variants": 7736,
+      "bootstrap_ci": {
+        "AUC": {
+          "estimate": 0.930111580480856,
+          "bootstrap_mean": 0.9323707029491379,
+          "lo": 0.8822513568901671,
+          "hi": 0.9754265076722616,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "R90_recall": {
+          "estimate": 0.8556725706079464,
+          "bootstrap_mean": 0.8540347201948395,
+          "lo": 0.812516615737204,
+          "hi": 0.8880514497313283,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "R90_precision": {
+          "estimate": 0.8953168044077136,
+          "bootstrap_mean": 0.8956361618805374,
+          "lo": 0.7978942082076041,
+          "hi": 0.9708277381370141,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "metadata": {
+          "method": "gene_group_cluster_percentile",
+          "confidence_level": 0.95,
+          "n_groups": 183,
+          "n_variants": 7736,
+          "n_boot": 2000,
+          "seed": 0,
+          "estimand": "variant_weighted_metrics_of_fixed_seed_averaged_oof_predictions",
+          "scope": "conditional_on_fitted_models_and_observed_groups; no_refitting",
+          "undefined_draws": "AUC: missing label class; recall: no positives; precision: no calls"
+        }
+      },
+      "confusion": {
+        "TP": 3575,
+        "FP": 418,
+        "TN": 3140,
+        "FN": 603
+      }
+    },
+    "ge2star": {
+      "feature_set": "L6_full",
+      "n_variants": 3554,
+      "bootstrap_ci": {
+        "AUC": {
+          "estimate": 0.9665793726945275,
+          "bootstrap_mean": 0.9679414113462049,
+          "lo": 0.9420278158466142,
+          "hi": 0.9873444078430931,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "R90_recall": {
+          "estimate": 0.8929279576999339,
+          "bootstrap_mean": 0.8919779009312689,
+          "lo": 0.8350132663035889,
+          "hi": 0.9369061825109701,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "R90_precision": {
+          "estimate": 0.8958885941644562,
+          "bootstrap_mean": 0.8982696771588078,
+          "lo": 0.7961025372102939,
+          "hi": 0.9659389998242459,
+          "n_valid": 2000,
+          "n_undefined": 0,
+          "status": "ok"
+        },
+        "metadata": {
+          "method": "gene_group_cluster_percentile",
+          "confidence_level": 0.95,
+          "n_groups": 141,
+          "n_variants": 3554,
+          "n_boot": 2000,
+          "seed": 0,
+          "estimand": "variant_weighted_metrics_of_fixed_seed_averaged_oof_predictions",
+          "scope": "conditional_on_fitted_models_and_observed_groups; no_refitting",
+          "undefined_draws": "AUC: missing label class; recall: no positives; precision: no calls"
+        }
+      },
+      "confusion": {
+        "TP": 1351,
+        "FP": 157,
+        "TN": 1884,
+        "FN": 162
+      }
+    }
+  },
+  "reference_checks": "cohort_counts_confusion_and_split_auc_match",
+  "scope": "Post hoc conditional uncertainty; fixed models and scores, no external validation or calibration. Paired contrasts descriptive; no p-values."
+}
