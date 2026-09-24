@@ -74,7 +74,8 @@ def normalize_variant(row):
     if chrom not in {str(i) for i in range(1, 23)} | {"X", "Y", "MT"}:
         r["error"] = "unsupported_chromosome"
         return r
-    if not re.fullmatch("[1-9][0-9]*", r["pos"]):
+    # Bounded so int() can't hit Python's 4300-digit limit and abort the whole batch.
+    if not re.fullmatch("[1-9][0-9]{0,9}", r["pos"]):
         r["error"] = "invalid_position"
         return r
 
