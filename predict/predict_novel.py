@@ -179,6 +179,8 @@ def main():
         columns = reader.fieldnames or []
         if set(INPUT_FIELDS) - set(columns):
             raise ValueError("Required columns: " + ",".join(INPUT_FIELDS))
+        if any(columns.count(c) > 1 for c in INPUT_FIELDS):
+            raise ValueError("Duplicate required column in input header")
         rows = list(reader)
     if not rows:
         raise ValueError("No input rows")
