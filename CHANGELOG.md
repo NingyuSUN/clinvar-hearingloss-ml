@@ -14,6 +14,10 @@
   [execution status](docs/statistical_revision.md) before citing revised intervals.
 - Shorten the README, add an evaluation diagram and clarify calibration/external
   validation boundaries and coding non-truncating cohort terminology.
+- Add large-batch load tests for `predict/` (`tests/test_stress.py`): ~22k mixed
+  valid/malformed rows through `predict_batch`, a 5k-row CLI run, duplicate
+  detection at scale, and a check that a variant's score is identical whether
+  scored alone or inside a large batch. Runs offline in CI (~6 s).
 
 ## 2026-09-18 — Add live annotation for genuinely novel variants (`predict_novel.py`)
 
