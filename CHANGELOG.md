@@ -18,6 +18,13 @@
   valid/malformed rows through `predict_batch`, a 5k-row CLI run, duplicate
   detection at scale, and a check that a variant's score is identical whether
   scored alone or inside a large batch. Runs offline in CI (~6 s).
+- Add seeded malformed-input fuzzing (`tests/test_fuzz_inputs.py`) and fix the
+  three input bugs it found: a position string over 4,300 digits crashed the
+  whole batch instead of failing that row (positions are now capped at 10
+  digits → `invalid_position`); `predict_variants.py` rejected UTF-8 CSVs with
+  a byte-order mark (now read as `utf-8-sig`, matching `predict_novel.py`);
+  and a header repeating a required column silently used the last copy (both
+  CLIs now reject it).
 
 ## 2026-09-18 — Add live annotation for genuinely novel variants (`predict_novel.py`)
 
