@@ -81,7 +81,11 @@ Input CSV columns: `variant_id,assembly,chrom,pos,ref,alt`. Only GRCh38,
 directory. Extra input columns are ignored (and logged in
 `run_manifest.json`); clinical labels are never read as features even if a
 column happens to be named `label` or similar — `predict/prediction_core.py`
-actively rejects any annotation record containing one.
+actively rejects any annotation record containing one. The file must be UTF-8
+(a leading byte-order mark, as Excel writes, is accepted); a header that
+repeats a required column is rejected rather than silently using one copy.
+A malformed row (bad position, allele, chromosome, ...) is reported as that
+row's error status and never aborts the rest of the batch.
 
 Outputs:
 - `predictions_wide.csv` — one row per variant, all five scores/statuses/decisions side by side.
