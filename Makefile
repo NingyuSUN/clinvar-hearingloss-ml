@@ -13,7 +13,7 @@ syntax:
 
 # Requires: pip install -r predict/requirements-inference.txt
 predict-test:
-	$(PYTHON) -m pytest tests/test_predict.py tests/test_render_variant_report.py -q
+	$(PYTHON) -m pytest tests/test_predict.py tests/test_stress.py tests/test_render_variant_report.py -q
 
 predict-demo:
 	rm -rf artifacts/predict_demo
