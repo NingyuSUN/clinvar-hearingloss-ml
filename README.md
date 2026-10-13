@@ -3,6 +3,20 @@
 [![Repository checks](https://github.com/NingyuSUN/clinvar-hearingloss-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/NingyuSUN/clinvar-hearingloss-ml/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+## Project evidence at a glance
+
+**Independent project by Ningyu Sun:** research design, data preparation, model
+evaluation, statistical review and research software delivery.
+
+- **Study:** 7,125 ClinVar variants across 167 gene groups; gene-held-out AUC
+  **0.930 [conditional 95% interval: 0.892, 0.974]**.
+- **Delivery:** five frozen inference configurations with documented input coverage
+  and explicit reasons for unavailable scores. Experimental live scoring currently
+  permits GPN3 only when its checks pass.
+- **Review the evidence:** [methods, actual errors, reproducibility and limits](docs/PROJECT_EVIDENCE.md)
+  · [numerical results](results/statistics_20260921/summary.json)
+  · [inference contract](docs/predict.md).
+
 **How well does a ClinVar pathogenicity classifier generalize to genes excluded
 from training, and which biological features drive its predictions?**
 
@@ -103,3 +117,4 @@ Probability calibration and independent external validation remain research
 boundaries. Strict-missense evaluation and robustness work are tracked in [project status](PROJECT_STATUS.md).
 [Engineering case study](docs/engineering_case_study.md) · [Model card](MODEL_CARD.md) · [Limitations](docs/limitations.md) ·
 [SHAP analysis](docs/shap.md) · [CI checks](.github/workflows/ci.yml)
+
