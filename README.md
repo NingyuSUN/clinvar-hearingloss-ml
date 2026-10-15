@@ -5,8 +5,9 @@
 
 ## Project evidence at a glance
 
-**Independent project by Ningyu Sun:** research design, data preparation, model
-evaluation, statistical review and research software delivery.
+**Authors:** Ningyu Sun (project lead) and Max Cao
+([@Max-Cao-0105](https://github.com/Max-Cao-0105)). The project covers research design,
+data preparation, model evaluation, statistical review and research software delivery.
 
 - **Study:** 7,125 ClinVar variants across 167 gene groups; gene-held-out AUC
   **0.930 [conditional 95% interval: 0.892, 0.974]**.
