@@ -10,9 +10,11 @@ evaluation, statistical review and research software delivery.
 
 - **Study:** 7,125 ClinVar variants across 167 gene groups; gene-held-out AUC
   **0.930 [conditional 95% interval: 0.892, 0.974]**.
-- **Delivery:** five frozen inference configurations with documented input coverage
-  and explicit reasons for unavailable scores. Experimental live scoring currently
-  permits GPN3 only when its checks pass.
+- **Delivery:** five frozen inference configurations that combine the 18 features with
+  [GPN-Star](#pretrained-genomic-model-scores-gpn-star-and-alphagenome) DNA language-model
+  scores and an AlphaGenome-based composite score, with documented input coverage and
+  explicit reasons for unavailable scores. Experimental live scoring currently permits
+  the GPN-Star-only model (`GPN3`) when its checks pass.
 - **Review the evidence:** [methods, actual errors, reproducibility and limits](docs/PROJECT_EVIDENCE.md)
   · [numerical results](results/statistics_20260921/summary.json)
   · [inference contract](docs/predict.md).
@@ -22,6 +24,8 @@ from training, and which biological features drive its predictions?**
 
 This research project combines ClinVar labels, VEP annotations, gnomAD frequency
 and gene constraint, protein domains, and conservation in an XGBoost pipeline.
+The prediction tool adds scores from two pretrained genomic models,
+[GPN-Star and AlphaGenome](#pretrained-genomic-model-scores-gpn-star-and-alphagenome).
 It demonstrates gene-group evaluation, feature ablation, out-of-fold attribution,
 and reproducible inference. It is not a clinical diagnostic tool.
 
@@ -86,6 +90,36 @@ Use a fresh output directory. This replays supported variants in the frozen
 annotation cache across five bundled model configurations; it does not annotate
 arbitrary new variants. Scores are uncalibrated.
 Read the [prediction contract](docs/predict.md) for supported inputs and model provenance.
+
+## Pretrained genomic model scores: GPN-Star and AlphaGenome
+
+The headline evaluation above uses the 18 hand-engineered features only. The five
+prediction configurations add scores from two pretrained genomic models:
+
+| Configuration | Inputs |
+|---|---|
+| `ORIGINAL18` | The 18 features (same feature set as the headline model) |
+| `GPN3` | Three GPN-Star scores only |
+| `ORIGINAL18_GPN` | 18 features + three GPN-Star scores |
+| `FULL_UNIFIED` | 18 features + GPN-Star + AVI, one pooled model |
+| `FULL_STRATIFIED` | Same inputs, with a protein-track sub-model for missense variants and an RNA-track sub-model for the other supported classes |
+
+- **GPN-Star** ([Song lab, GPN](https://github.com/songlab-cal/gpn)): log-likelihood
+  ratio scores from three checkpoints (vertebrate-100, mammal-447 and primate-243).
+  Scores are read from the precomputed public dataset
+  [`songlab/gpn-star-scores`](https://huggingface.co/datasets/songlab/gpn-star-scores)
+  on Hugging Face; no local model or GPU is needed.
+- **AlphaGenome** ([Google DeepMind](https://github.com/google-deepmind/alphagenome)):
+  enters through **AVI**, a composite variant score that blends AlphaGenome with
+  AlphaMissense and related signals, and through splice-site annotations. AVI is not
+  a pure AlphaGenome score, and there is no AlphaGenome-only model in this release.
+  The [live annotation path](docs/predict_novel.md) can request AVI and splice-site
+  annotations with your own key (`pip install alphagenome`, `ALPHAGENOME_API_KEY`);
+  without a key they remain missing.
+
+These configurations use gene-group folds under a fixed research profile. Their
+scores are uncalibrated, and this repository does not report a separate performance
+estimate for them: the headline AUC above applies to the 18-feature model.
 
 ## Evaluation and reproduction
 
