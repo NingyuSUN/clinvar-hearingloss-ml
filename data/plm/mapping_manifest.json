@@ -1,0 +1,69 @@
+{
+  "protocol": "PLM-ESM-2026-10",
+  "generated_utc": "2026-10-20T00:39:09+00:00",
+  "label_column_read": false,
+  "ensembl_rest": "https://rest.ensembl.org",
+  "ensembl_release": [
+    116
+  ],
+  "ensembl_software": {
+    "release": 116
+  },
+  "vep_endpoint": "POST /vep/human/region",
+  "vep_params": {
+    "protein": 1,
+    "mane": 1,
+    "canonical": 1,
+    "transcript_version": 1
+  },
+  "sequence_endpoint": "POST /sequence/id (type=protein, object_type=transcript)",
+  "inputs_sha256": {
+    "data/modeling_matrix.csv.gz": "225fbf1c5060baadd157149b2c43424614a0fd88550ce22ecc6920e3ca17aceb",
+    "predict/examples/known_variants_7125.csv": "4bb5314d176c52397bb53198dd3ad2e8698f58cec371ab32ca81e33204de19fa",
+    "predict/bundle/annotation_cache.jsonl": "8c5a4871975d02b974ec7d0489c0efa431c131b9af50a601a10086b39de8a937"
+  },
+  "outputs_sha256": {
+    "variant_protein_map.csv": "4d8f5f9b72b7784c59cbd3887914f5fe06ef78d1bcb4b76e7c43182e28b9bdd0",
+    "vep_cached_transcript.jsonl.gz": "773113f7b8b14c77b5e716b486175eec54b8e239aeeeb36793d407057159efc2",
+    "proteins.json": "2b496b26f4849e6ec663fabde855de276cbe26b50fa97ad4f28422ffca9f5cf5",
+    "esm_scoring_input.json": "74a46e292b21157f45443fb9c4f8628f63be6634fbab1eeffa87f1f07d49655c"
+  },
+  "counts": {
+    "headline_variants": 7125,
+    "vep_queried_variants": 3683,
+    "map_status": {
+      "no_single_cached_transcript": 1,
+      "not_candidate_class": 3441,
+      "not_missense": 2354,
+      "not_single_residue_substitution": 1,
+      "scored": 1328
+    },
+    "scored_by_consequence_class": {
+      "coding_nontruncating": 1328
+    },
+    "scored_by_cached_variant_type": {
+      "missense": 1328
+    },
+    "vep_transcript_version_changed": 0,
+    "proteins_scored": 135,
+    "positions_scored": 1189,
+    "proteins_longer_than_window": 47,
+    "status_by_cached_variant_type": {
+      "missense|scored": 1328,
+      "truncating|not_candidate_class": 1952,
+      "splice_region|not_candidate_class": 555,
+      "canonical_splice|not_missense": 562,
+      "start_stop_altering|not_missense": 25,
+      "synonymous|not_missense": 1733,
+      "inframe_indel|not_missense": 28,
+      "intronic|not_candidate_class": 653,
+      "UTR3|not_candidate_class": 229,
+      "other_coding|not_missense": 6,
+      "UTR5|not_candidate_class": 47,
+      "downstream|not_candidate_class": 4,
+      "upstream|not_candidate_class": 1,
+      "missense|not_single_residue_substitution": 1,
+      "canonical_splice|no_single_cached_transcript": 1
+    }
+  }
+}

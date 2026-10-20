@@ -70,8 +70,8 @@ def balanced_group_folds(sizes: dict, prev: dict, k: int, seed: int) -> dict:
     return assign
 
 
-def _impute(train_x: pd.DataFrame, *others: pd.DataFrame):
-    med = {c: float(train_x[c].median()) for c in train_x.columns if c in CONTINUOUS}
+def _impute(train_x: pd.DataFrame, *others: pd.DataFrame, continuous=CONTINUOUS):
+    med = {c: float(train_x[c].median()) for c in train_x.columns if c in continuous}
 
     def fix(df):
         df = df.copy()
@@ -82,14 +82,14 @@ def _impute(train_x: pd.DataFrame, *others: pd.DataFrame):
     return (fix(train_x), *[fix(o) for o in others])
 
 
-def _one_fold(data, feats, outer, inner, out_fold, seed):
+def _one_fold(data, feats, outer, inner, out_fold, seed, continuous=CONTINUOUS):
     te = data[data["_grp"].map(outer) == out_fold]
     tr = data[data["_grp"].map(outer) != out_fold]
     iv = tr[tr["_grp"].map(inner) == 1]
     it = tr[tr["_grp"].map(inner) == 0]
     if not len(iv) or not len(it):
         return None
-    xit, xiv, xte = _impute(it[feats], iv[feats], te[feats])
+    xit, xiv, xte = _impute(it[feats], iv[feats], te[feats], continuous=continuous)
     yit, yiv, yte = (it["y"].astype(int).to_numpy(), iv["y"].astype(int).to_numpy(),
                      te["y"].astype(int).to_numpy())
     hist: dict = {}
@@ -127,9 +127,16 @@ def _one_fold(data, feats, outer, inner, out_fold, seed):
 
 
 def run_experiment(matrix: pd.DataFrame, cohort_flag: str, feature_sets: list[str],
-                   seeds: list[int] = SEEDS, random_split: bool = False):
+                   seeds: list[int] = SEEDS, random_split: bool = False,
+                   feature_map: dict | None = None, continuous=None):
     """Run every ``feature_set`` over ``seeds`` x ``K_OUTER`` folds on the cohort
-    selected by ``cohort_flag``. Returns ``(per_fold_df, {feature_set: oof_df})``."""
+    selected by ``cohort_flag``. Returns ``(per_fold_df, {feature_set: oof_df})``.
+
+    ``feature_map`` and ``continuous`` default to the frozen ``FEATURE_SETS`` and
+    ``CONTINUOUS``. Extensions such as ``hlpath.plm`` pass their own feature sets
+    without changing folds, model, iteration selection or the imputation rule."""
+    feature_map = FEATURE_SETS if feature_map is None else feature_map
+    continuous = CONTINUOUS if continuous is None else continuous
     d = matrix[matrix[cohort_flag] == 1].reset_index(drop=True).copy()
     d["_grp"] = ([f"row{i}" for i in range(len(d))] if random_split
                  else d["p4_gene_group"].astype(str))
@@ -148,11 +155,11 @@ def run_experiment(matrix: pd.DataFrame, cohort_flag: str, feature_sets: list[st
             inner_folds = balanced_group_folds(tsz, tpv, inner_k, seed * 97 + out_fold)
             inner = {g: (1 if inner_folds[g] == 0 else 0) for g in train_groups}
             for name in feature_sets:
-                res = _one_fold(d, FEATURE_SETS[name], outer, inner, out_fold, seed)
+                res = _one_fold(d, feature_map[name], outer, inner, out_fold, seed, continuous)
                 if res is None:
                     continue
                 fold_row, fold_oof = res
-                fold_row |= {"feature_set": name, "n_features": len(FEATURE_SETS[name]),
+                fold_row |= {"feature_set": name, "n_features": len(feature_map[name]),
                              "cohort": cohort_flag}
                 rows.append(fold_row)
                 oof.setdefault(name, []).append(fold_oof)
