@@ -46,6 +46,13 @@ clarifies cohort terminology, metric aggregation, and unresolved validation issu
       pending author review — see `CHANGELOG.md`).
 - [ ] Audit the conservation feature's exact provenance and the ClinVar
       phenotype-condition mapping (open item in `docs/limitations.md`).
+- [x] Prespecified protein language model extension (`PLM-ESM-2026-10`,
+      [protocol](docs/plm_protocol.md), [results](docs/plm_results.md)).
+      The primary gain on coding non-truncating variants comes from
+      missense-vs-synonymous status; within missense variants (1,328) ESM-1v
+      adds +0.017 AUC [+0.005, +0.033]. This also gives the first
+      strict-missense *evaluation* of the subset models; a missense-only
+      *training* run is still open.
 
 ## Decision
 

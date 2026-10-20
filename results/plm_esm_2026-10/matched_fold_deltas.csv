@@ -1,0 +1,9 @@
+contrast,tier,task,inference,n_folds,n_pairs,n_undefined_pairs,mean_delta,sd_delta,n_seeds,seed_mean_min,seed_mean_max
+ORIGINAL18_ESM1V - ORIGINAL18,primary,plm_codingnt,descriptive_only,50,50,0,0.127738,0.034137,10,0.116664,0.140101
+ORIGINAL18_ESM1V - ORIGINAL18,secondary,plm_headline,descriptive_only,50,50,0,0.042190,0.014186,10,0.037399,0.045841
+ORIGINAL18_ESM1V - ORIGINAL18_SCOREDFLAG,secondary,plm_codingnt,descriptive_only,50,50,0,0.001098,0.003853,10,0.000013,0.001794
+ORIGINAL18_ESM2 - ORIGINAL18,descriptive,plm_codingnt,descriptive_only,50,50,0,0.127750,0.034866,10,0.116612,0.140628
+ORIGINAL18_ESM2 - ORIGINAL18,descriptive,plm_headline,descriptive_only,50,50,0,0.040720,0.013585,10,0.036497,0.044499
+ORIGINAL18_SCOREDFLAG - ORIGINAL18,descriptive,plm_codingnt,descriptive_only,50,50,0,0.126640,0.034333,10,0.116163,0.138458
+ESM1V_ONLY - ORIGINAL18,descriptive,plm_codingnt,descriptive_only,50,50,0,0.076515,0.046641,10,0.062990,0.089224
+ORIGINAL18_ESM1V - ORIGINAL18_SCOREDFLAG,descriptive,plm_headline,descriptive_only,50,50,0,0.001317,0.001135,10,0.000702,0.001671

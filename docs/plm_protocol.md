@@ -219,6 +219,17 @@ never the published numbers.
    - one worker per available GPU pulling models from a queue.
 
    The scoring definition, models, revisions, windows and inputs are unchanged.
+2. **Scoring run 2 (kernel version 2) succeeded.** All six models scored all
+   1,189 positions on two T4s. Scores and label-free features were committed
+   (`5f4323d`) before fitting.
+3. **Fits sealed.** 600 fold fits finished in 18 minutes. The SHA256 of all
+   14 prediction files was committed (`a661139`) before any metric was computed.
+4. **ORIGINAL18 reproduction check: not exact.** The subset AUC is 0.8226
+   against the published 0.8148; the headline AUC is 0.9309 against 0.9301.
+   In a post hoc diagnostic, 1, 8 and 10 threads gave identical predictions, and
+   a re-fit matched the sealed predictions. The published run used the archived
+   pre-package implementation. As prespecified, all contrasts use the re-run. See
+   [results](plm_results.md).
 
 ## Software
 
