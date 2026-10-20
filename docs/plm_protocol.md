@@ -204,6 +204,22 @@ never the published numbers.
 - Any technical scoring failure is recorded as an amendment before fitting,
   with the affected variants left unscored, never after.
 
+## Execution log (amendments after the freeze)
+
+1. **Scoring run 1 (Kaggle kernel version 1, 2026-10-20) failed.** All five
+   ESM-1v models scored the 1,189 positions (about 7.3 min each; weights matched
+   the hub LFS SHA256). Loading ESM-2 then ran out of GPU memory, because the
+   earlier models had not been freed: HF modules hold reference cycles that
+   `del` does not break. The kernel writes its output only at the end, so no
+   scores were saved, and none were seen or joined to labels.
+
+   Engineering fix:
+   - explicit `gc.collect()` before `empty_cache()`;
+   - per-model partial output files;
+   - one worker per available GPU pulling models from a queue.
+
+   The scoring definition, models, revisions, windows and inputs are unchanged.
+
 ## Software
 
 Python 3.12, xgboost 3.4.1, numpy 2.5.3, pandas 3.0.1 (matching the original

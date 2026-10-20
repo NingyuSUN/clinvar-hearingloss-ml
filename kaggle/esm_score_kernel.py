@@ -17,13 +17,16 @@ from __future__ import annotations
 
 import argparse
 import base64
+import gc
 import gzip
 import hashlib
 import io
 import json
 import os
 import platform
+import queue
 import shutil
+import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -41,6 +44,8 @@ MODEL_REVISIONS = {
 }
 WEIGHT_FILES = ("model.safetensors", "pytorch_model.bin")
 TOKENS_PER_BATCH = 8192
+COLUMNS = ["transcript_stable_id", "protein_position", "model", "model_revision",
+           "window_start", "window_end", "ref_aa", *[f"lp_{a}" for a in AA20]]
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -137,10 +142,44 @@ def score_model(model_dir: Path, items: list[dict], device: str) -> list[dict]:
                     rows.append({"transcript_stable_id": tid, "protein_position": m["position"],
                                  "window_start": start, "window_end": end, "ref_aa": m["ref"],
                                  **{f"lp_{a}": float(v) for a, v in zip(AA20, row)}})
-    del model
-    if device.startswith("cuda"):
-        torch.cuda.empty_cache()
     return rows
+
+
+def release(device: str) -> None:
+    """Free a finished model. HF modules hold reference cycles, so ``del`` alone
+    left five 650M models resident and the sixth load ran out of GPU memory."""
+    import torch
+
+    gc.collect()
+    if device.startswith("cuda"):
+        with torch.cuda.device(device):
+            torch.cuda.empty_cache()
+
+
+def write_rows(path: Path, rows: list[dict]) -> None:
+    lines = [",".join(COLUMNS)]
+    for r in sorted(rows, key=lambda r: (r["model"], r["transcript_stable_id"], r["protein_position"])):
+        lines.append(",".join(f"{r[c]:.6f}" if isinstance(r[c], float) else str(r[c]) for c in COLUMNS))
+    buf = io.BytesIO()
+    with gzip.GzipFile(fileobj=buf, mode="wb", mtime=0) as gz:
+        gz.write(("\n".join(lines) + "\n").encode())
+    path.write_bytes(buf.getvalue())
+
+
+def run_model(repo: str, items: list[dict], device: str, cache_root: Path, out: Path):
+    t0 = time.time()
+    cache = cache_root / repo.replace("/", "__")
+    local, meta = fetch_model(repo, MODEL_REVISIONS.get(repo), cache)
+    rows = score_model(local, items, device)
+    release(device)
+    shutil.rmtree(cache, ignore_errors=True)  # keep disk use to the models in flight
+    for r in rows:
+        r["model"] = repo
+        r["model_revision"] = meta["resolved_revision"]
+    write_rows(out / f"partial__{repo.split('/')[-1]}.csv.gz", rows)  # survives a later failure
+    meta |= {"n_positions": len(rows), "seconds": round(time.time() - t0, 1), "device": device}
+    print(json.dumps(meta), flush=True)
+    return rows, meta
 
 
 def main() -> None:
@@ -160,39 +199,44 @@ def main() -> None:
     torch.manual_seed(0)
     torch.backends.cuda.matmul.allow_tf32 = False
     torch.backends.cudnn.allow_tf32 = False
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    n_gpu = torch.cuda.device_count()
+    devices = [f"cuda:{i}" for i in range(n_gpu)] or ["cpu"]
     out = Path(args.out).expanduser()
     out.mkdir(parents=True, exist_ok=True)
     spec, input_sha = load_input(args.input)
     items = work_items(spec, args.limit)
-    print(f"{len(items)} positions on {len({i['tid'] for i in items})} proteins; device={device}",
+    print(f"{len(items)} positions on {len({i['tid'] for i in items})} proteins; devices={devices}",
           flush=True)
 
-    all_rows, models_meta = [], []
+    # One worker per GPU pulls models from a queue; results do not depend on
+    # which device scored a model, and the output is sorted afterwards.
+    todo: queue.Queue = queue.Queue()
     for repo in args.models:
-        t0 = time.time()
-        cache = Path(args.cache)
-        local, meta = fetch_model(repo, MODEL_REVISIONS.get(repo), cache)
-        rows = score_model(local, items, device)
-        for r in rows:
-            r["model"] = repo
-            r["model_revision"] = meta["resolved_revision"]
-        all_rows.extend(rows)
-        meta |= {"n_positions": len(rows), "seconds": round(time.time() - t0, 1)}
-        models_meta.append(meta)
-        print(json.dumps(meta), flush=True)
-        shutil.rmtree(cache, ignore_errors=True)  # keep disk use to one model at a time
+        todo.put(repo)
+    results, errors = {}, []
 
-    cols = ["transcript_stable_id", "protein_position", "model", "model_revision",
-            "window_start", "window_end", "ref_aa", *[f"lp_{a}" for a in AA20]]
-    lines = [",".join(cols)]
-    for r in sorted(all_rows, key=lambda r: (r["model"], r["transcript_stable_id"], r["protein_position"])):
-        lines.append(",".join(f"{r[c]:.6f}" if isinstance(r[c], float) else str(r[c]) for c in cols))
-    buf = io.BytesIO()
-    with gzip.GzipFile(fileobj=buf, mode="wb", mtime=0) as gz:
-        gz.write(("\n".join(lines) + "\n").encode())
+    def worker(device: str) -> None:
+        while not errors:
+            try:
+                repo = todo.get_nowait()
+            except queue.Empty:
+                return
+            try:
+                results[repo] = run_model(repo, items, device, Path(args.cache), out)
+            except BaseException as exc:  # surfaced after join
+                errors.append((repo, device, repr(exc)))
+
+    threads = [threading.Thread(target=worker, args=(d,)) for d in devices]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    if errors or set(results) != set(args.models):
+        raise SystemExit(f"scoring failed: {errors or sorted(set(args.models) - set(results))}")
+    all_rows = [r for repo in args.models for r in results[repo][0]]
+    models_meta = [results[repo][1] for repo in args.models]
     out_path = out / "esm_logprobs.csv.gz"
-    out_path.write_bytes(buf.getvalue())
+    write_rows(out_path, all_rows)
 
     manifest = {
         "protocol": spec.get("protocol"),
@@ -208,7 +252,7 @@ def main() -> None:
                      "transformers": transformers.__version__,
                      "huggingface_hub": huggingface_hub.__version__, "numpy": np.__version__,
                      "cuda": torch.version.cuda,
-                     "device": torch.cuda.get_device_name(0) if device == "cuda" else "cpu"},
+                     "devices": [torch.cuda.get_device_name(i) for i in range(n_gpu)] or ["cpu"]},
     }
     (out / "esm_scoring_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print(json.dumps({k: v for k, v in manifest.items() if k != "models"}, indent=2))
