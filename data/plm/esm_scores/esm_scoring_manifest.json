@@ -1,0 +1,138 @@
+{
+  "protocol": "PLM-ESM-2026-10",
+  "generated_utc": "2026-10-20T06:19:29+00:00",
+  "strategy": "masked_marginal: one masked residue per forward pass, fp32, log_softmax over full vocabulary",
+  "input_sha256": "74a46e292b21157f45443fb9c4f8628f63be6634fbab1eeffa87f1f07d49655c",
+  "embedded_input": true,
+  "ensembl_release": [
+    116
+  ],
+  "max_residues": 1022,
+  "n_positions_requested": 1189,
+  "limit": null,
+  "models": [
+    {
+      "repo": "facebook/esm1v_t33_650M_UR90S_1",
+      "requested_revision": "8bfdb1892536cc77bd0760b9c25ddced2cd0b4c8",
+      "resolved_revision": "8bfdb1892536cc77bd0760b9c25ddced2cd0b4c8",
+      "weight_file": "pytorch_model.bin",
+      "weight_sha256": "b0c673e144ee21c82ae32485ee5010cac2b82acf1db269a7811aa48162eae0c9",
+      "files": [
+        "config.json",
+        "pytorch_model.bin",
+        "special_tokens_map.json",
+        "tokenizer_config.json",
+        "vocab.txt"
+      ],
+      "hub_lfs_sha256": "b0c673e144ee21c82ae32485ee5010cac2b82acf1db269a7811aa48162eae0c9",
+      "n_positions": 1189,
+      "seconds": 508.7,
+      "device": "cuda:0"
+    },
+    {
+      "repo": "facebook/esm1v_t33_650M_UR90S_2",
+      "requested_revision": "3c1e9e64480f069b163e456c361bfd80a8bab04c",
+      "resolved_revision": "3c1e9e64480f069b163e456c361bfd80a8bab04c",
+      "weight_file": "pytorch_model.bin",
+      "weight_sha256": "607ebcbf587c309caed221be04de45296061b411bc344343da4386f60d0c351d",
+      "files": [
+        "config.json",
+        "pytorch_model.bin",
+        "special_tokens_map.json",
+        "tokenizer_config.json",
+        "vocab.txt"
+      ],
+      "hub_lfs_sha256": "607ebcbf587c309caed221be04de45296061b411bc344343da4386f60d0c351d",
+      "n_positions": 1189,
+      "seconds": 471.7,
+      "device": "cuda:1"
+    },
+    {
+      "repo": "facebook/esm1v_t33_650M_UR90S_3",
+      "requested_revision": "0b00fd112e63f6b5e70a9cd8484d4e660312ce70",
+      "resolved_revision": "0b00fd112e63f6b5e70a9cd8484d4e660312ce70",
+      "weight_file": "pytorch_model.bin",
+      "weight_sha256": "32e42a31ab0cfa4200aa952227a6a12e2d183766611e370d15c0fe099da377a2",
+      "files": [
+        "config.json",
+        "pytorch_model.bin",
+        "special_tokens_map.json",
+        "tokenizer_config.json",
+        "vocab.txt"
+      ],
+      "hub_lfs_sha256": "32e42a31ab0cfa4200aa952227a6a12e2d183766611e370d15c0fe099da377a2",
+      "n_positions": 1189,
+      "seconds": 453.4,
+      "device": "cuda:1"
+    },
+    {
+      "repo": "facebook/esm1v_t33_650M_UR90S_4",
+      "requested_revision": "443968f644da132d323bbc6321a6d443149fa57b",
+      "resolved_revision": "443968f644da132d323bbc6321a6d443149fa57b",
+      "weight_file": "pytorch_model.bin",
+      "weight_sha256": "fe1976a0fbece3a730a29afc92400fd93a3bbac559349178e037b59a0db3484a",
+      "files": [
+        "config.json",
+        "pytorch_model.bin",
+        "special_tokens_map.json",
+        "tokenizer_config.json",
+        "vocab.txt"
+      ],
+      "hub_lfs_sha256": "fe1976a0fbece3a730a29afc92400fd93a3bbac559349178e037b59a0db3484a",
+      "n_positions": 1189,
+      "seconds": 484.9,
+      "device": "cuda:0"
+    },
+    {
+      "repo": "facebook/esm1v_t33_650M_UR90S_5",
+      "requested_revision": "fb2e51cb0f605cbad2c4ca3bb784be7bc8e2f4a8",
+      "resolved_revision": "fb2e51cb0f605cbad2c4ca3bb784be7bc8e2f4a8",
+      "weight_file": "pytorch_model.bin",
+      "weight_sha256": "81b40eeb5390f82e0347d3e29f90d8ecf9d4a3d340a8bbec7acbe92f395d84ca",
+      "files": [
+        "config.json",
+        "pytorch_model.bin",
+        "special_tokens_map.json",
+        "tokenizer_config.json",
+        "vocab.txt"
+      ],
+      "hub_lfs_sha256": "81b40eeb5390f82e0347d3e29f90d8ecf9d4a3d340a8bbec7acbe92f395d84ca",
+      "n_positions": 1189,
+      "seconds": 451.1,
+      "device": "cuda:1"
+    },
+    {
+      "repo": "facebook/esm2_t33_650M_UR50D",
+      "requested_revision": "08e4846e537177426273712802403f7ba8261b6c",
+      "resolved_revision": "08e4846e537177426273712802403f7ba8261b6c",
+      "weight_file": "model.safetensors",
+      "weight_sha256": "a08adabb949fa67ad3c14b509d04fd60368b35007b0095e3358f81200c4f4db0",
+      "files": [
+        "config.json",
+        "model.safetensors",
+        "special_tokens_map.json",
+        "tokenizer_config.json",
+        "vocab.txt"
+      ],
+      "hub_lfs_sha256": "a08adabb949fa67ad3c14b509d04fd60368b35007b0095e3358f81200c4f4db0",
+      "n_positions": 1189,
+      "seconds": 499.6,
+      "device": "cuda:0"
+    }
+  ],
+  "output_file": "esm_logprobs.csv.gz",
+  "output_sha256": "0eabfd3496961bd3890e05cecf65bc522b904e2f783a7f703e401037c9c5f5b3",
+  "output_uncompressed_sha256": "3a1787a958d7b8cd93d0e34a24196d420fe94dc9b7e96bbee7567118426ed723",
+  "versions": {
+    "python": "3.13.15",
+    "torch": "2.11.0+cu128",
+    "transformers": "5.16.1",
+    "huggingface_hub": "1.29.0",
+    "numpy": "2.1.3",
+    "cuda": "12.8",
+    "devices": [
+      "Tesla T4",
+      "Tesla T4"
+    ]
+  }
+}

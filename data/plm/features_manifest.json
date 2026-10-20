@@ -1,0 +1,35 @@
+{
+  "protocol": "PLM-ESM-2026-10",
+  "label_column_read": false,
+  "inputs_sha256": {
+    "data/plm/variant_protein_map.csv": "4d8f5f9b72b7784c59cbd3887914f5fe06ef78d1bcb4b76e7c43182e28b9bdd0",
+    "data/plm/esm_scoring_input.json": "74a46e292b21157f45443fb9c4f8628f63be6634fbab1eeffa87f1f07d49655c",
+    "data/plm/esm_scores/esm_logprobs.csv.gz": "0eabfd3496961bd3890e05cecf65bc522b904e2f783a7f703e401037c9c5f5b3",
+    "data/plm/esm_scores/esm_scoring_manifest.json": "75e818b9a53684c76fe22395d9468f2e1f6ae13eb5890e795050864e08dc544e"
+  },
+  "outputs_sha256": {
+    "data/plm/plm_features.csv": "16b463e18e61445213228f924f6188c30549897fd294cc7f76b6f38a7125667b"
+  },
+  "counts": {
+    "variants": 7125,
+    "plm_scored": 1328,
+    "esm1v_llr_present": 1328,
+    "esm2_llr_present": 1328
+  },
+  "kernel": {
+    "generated_utc": "2026-10-20T06:19:29+00:00",
+    "strategy": "masked_marginal: one masked residue per forward pass, fp32, log_softmax over full vocabulary",
+    "versions": {
+      "python": "3.13.15",
+      "torch": "2.11.0+cu128",
+      "transformers": "5.16.1",
+      "huggingface_hub": "1.29.0",
+      "numpy": "2.1.3",
+      "cuda": "12.8",
+      "devices": [
+        "Tesla T4",
+        "Tesla T4"
+      ]
+    }
+  }
+}
