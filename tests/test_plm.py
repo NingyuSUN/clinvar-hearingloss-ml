@@ -111,6 +111,14 @@ def test_variant_llrs_ensemble_mean_and_unscored():
     assert out.loc[1, plm.SCORED_FLAG] == 1
 
 
+def test_variant_llrs_accepts_kernel_output_columns():
+    models = [*plm.ESM1V_MODELS, plm.ESM2_MODEL]
+    lp = pd.DataFrame(logprob_rows("ENST1", 3, models, [-1] * 6, [-2] * 6))
+    lp = lp.assign(ref_aa="R", model_revision="abc", window_start=0, window_end=3)
+    out = plm.variant_llrs(mapping_frame(), lp).set_index("VariationID")
+    assert out.loc[1, "esm1v_llr"] == pytest.approx(-1.0)
+
+
 def test_variant_llrs_requires_all_esm1v_members():
     models = list(plm.ESM1V_MODELS[:4])
     lp = pd.DataFrame(logprob_rows("ENST1", 3, models, [-1] * 4, [-2] * 4))

@@ -168,7 +168,8 @@ def variant_llrs(mapping: pd.DataFrame, logprobs: pd.DataFrame) -> pd.DataFrame:
     scored["transcript_stable_id"] = scored["cached_transcript_id"].map(stable_id)
     scored["protein_position"] = scored["protein_position"].astype(int)
     # Several variants can share a position (different alternate residues).
-    merged = scored.merge(logprobs, on=["transcript_stable_id", "protein_position"], how="left")
+    keep = ["transcript_stable_id", "protein_position", "model", *lp_cols]
+    merged = scored.merge(logprobs[keep], on=["transcript_stable_id", "protein_position"], how="left")
     merged["llr"] = [
         masked_marginal_llr({a: r[f"lp_{a}"] for a in AA20}, r["ref_aa"], r["alt_aa"])
         if pd.notna(r["model"]) else np.nan
