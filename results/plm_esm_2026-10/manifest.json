@@ -1,0 +1,187 @@
+{
+  "protocol": "PLM-ESM-2026-10",
+  "prediction_seal": {
+    "protocol": "PLM-ESM-2026-10",
+    "generated_utc": "2026-10-20T06:39:26+00:00",
+    "git_commit": "5f4323d25b3a1d3097711f7379f75f35e18550b0",
+    "tasks": {
+      "plm_codingnt": {
+        "cohort_flag": "p4_headline_cohort",
+        "consequence_classes": [
+          "coding_nontruncating"
+        ]
+      },
+      "plm_headline": {
+        "cohort_flag": "p4_headline_cohort",
+        "consequence_classes": null
+      }
+    },
+    "feature_sets": {
+      "ORIGINAL18": [
+        "p1_has_frameshift",
+        "p1_has_stop_gained",
+        "p1_has_canonical_splice",
+        "p1_has_splice_region",
+        "variant_length",
+        "has_del",
+        "has_ins",
+        "has_dup",
+        "ensembl_conservation",
+        "p3_gene_constraint_oe_lof_upper",
+        "p3_gene_constraint_oe_mis_upper",
+        "p4_freq_log10",
+        "p2_af_known_missing",
+        "p2_not_observed_in_gnomad_r4",
+        "p2_low_an_flag",
+        "p3_in_specific_domain",
+        "p3_specific_domain_count",
+        "p3_variant_is_coding"
+      ],
+      "ESM1V_ONLY": [
+        "esm1v_llr"
+      ],
+      "ORIGINAL18_ESM1V": [
+        "p1_has_frameshift",
+        "p1_has_stop_gained",
+        "p1_has_canonical_splice",
+        "p1_has_splice_region",
+        "variant_length",
+        "has_del",
+        "has_ins",
+        "has_dup",
+        "ensembl_conservation",
+        "p3_gene_constraint_oe_lof_upper",
+        "p3_gene_constraint_oe_mis_upper",
+        "p4_freq_log10",
+        "p2_af_known_missing",
+        "p2_not_observed_in_gnomad_r4",
+        "p2_low_an_flag",
+        "p3_in_specific_domain",
+        "p3_specific_domain_count",
+        "p3_variant_is_coding",
+        "esm1v_llr"
+      ],
+      "ORIGINAL18_SCOREDFLAG": [
+        "p1_has_frameshift",
+        "p1_has_stop_gained",
+        "p1_has_canonical_splice",
+        "p1_has_splice_region",
+        "variant_length",
+        "has_del",
+        "has_ins",
+        "has_dup",
+        "ensembl_conservation",
+        "p3_gene_constraint_oe_lof_upper",
+        "p3_gene_constraint_oe_mis_upper",
+        "p4_freq_log10",
+        "p2_af_known_missing",
+        "p2_not_observed_in_gnomad_r4",
+        "p2_low_an_flag",
+        "p3_in_specific_domain",
+        "p3_specific_domain_count",
+        "p3_variant_is_coding",
+        "plm_scored"
+      ],
+      "ESM2_ONLY": [
+        "esm2_llr"
+      ],
+      "ORIGINAL18_ESM2": [
+        "p1_has_frameshift",
+        "p1_has_stop_gained",
+        "p1_has_canonical_splice",
+        "p1_has_splice_region",
+        "variant_length",
+        "has_del",
+        "has_ins",
+        "has_dup",
+        "ensembl_conservation",
+        "p3_gene_constraint_oe_lof_upper",
+        "p3_gene_constraint_oe_mis_upper",
+        "p4_freq_log10",
+        "p2_af_known_missing",
+        "p2_not_observed_in_gnomad_r4",
+        "p2_low_an_flag",
+        "p3_in_specific_domain",
+        "p3_specific_domain_count",
+        "p3_variant_is_coding",
+        "esm2_llr"
+      ]
+    },
+    "k_outer": 5,
+    "seeds": [
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110
+    ],
+    "num_boost_round_cap": 700,
+    "xgb_params": {
+      "objective": "binary:logistic",
+      "eval_metric": [
+        "auc",
+        "logloss"
+      ],
+      "eta": 0.03,
+      "max_depth": 5,
+      "subsample": 0.9,
+      "colsample_bytree": 0.9,
+      "lambda": 1.0,
+      "min_child_weight": 1,
+      "tree_method": "hist",
+      "seed": 101,
+      "nthread": 10
+    },
+    "versions": {
+      "xgboost": "3.4.1",
+      "numpy": "2.5.3",
+      "pandas": "3.0.1"
+    },
+    "inputs_sha256": {
+      "data/modeling_matrix.csv.gz": "225fbf1c5060baadd157149b2c43424614a0fd88550ce22ecc6920e3ca17aceb",
+      "data/plm/plm_features.csv": "16b463e18e61445213228f924f6188c30549897fd294cc7f76b6f38a7125667b"
+    },
+    "predictions_sha256": {
+      "per_fold_plm_codingnt.csv": "f2d2b1fcc12b4b70a655f8b32a6efe50e3595304fb29ec687f182ad75efd8c2d",
+      "oof_plm_codingnt__ORIGINAL18.csv": "6f43fccd45192bb22ac8208d283acbe0798f55f9abd3fbd069b4c6f0b9ee07ad",
+      "oof_plm_codingnt__ESM1V_ONLY.csv": "5a59544f8f6dbc6704f8d15ea6657c78072ef98d477a662515a3e81e2d6e8d5c",
+      "oof_plm_codingnt__ORIGINAL18_ESM1V.csv": "2e72f9bcd04c19e20b7b6716f93063a220e4a272742ad3d7646293018d9a1cae",
+      "oof_plm_codingnt__ORIGINAL18_SCOREDFLAG.csv": "2e155eda9df1da007035fc96b4fca61e32d3b9b01a8b5ffc0d9fb74c3fd5e33d",
+      "oof_plm_codingnt__ESM2_ONLY.csv": "c09c0ad4ad4766758678c13c844fb7bec4d17a2818cb2c3bcfa96f77720fc7be",
+      "oof_plm_codingnt__ORIGINAL18_ESM2.csv": "5f6bd46b7c09df6ac26099ed7d23e82cee2046994201034b59cf214312df9f48",
+      "per_fold_plm_headline.csv": "4800170522c7927cb086eb0ebcccabe6223fdd7996c660ae6876d84068b7b5b1",
+      "oof_plm_headline__ORIGINAL18.csv": "d9cd4ffc94e240f37df58e29df77d2a3f2b9e0da3ab1801c7eed750577936fea",
+      "oof_plm_headline__ESM1V_ONLY.csv": "6ddbc8ded719156941ed6c11561eb5dbba9e7d5a5ca0bd47656a78e825856d99",
+      "oof_plm_headline__ORIGINAL18_ESM1V.csv": "8b12ed0e3dc7054062efb56b4e3fdcfcf6720b60f2f2bbc2f0b930902dde1e87",
+      "oof_plm_headline__ORIGINAL18_SCOREDFLAG.csv": "a17e655f47bb3daef24f799c75cb8e8ddeef950312962fefd327c003f11078ad",
+      "oof_plm_headline__ESM2_ONLY.csv": "dbc9cd045b84d2944319253cb5d0d43eecb21770008833992b75425ee54bf602",
+      "oof_plm_headline__ORIGINAL18_ESM2.csv": "94897bace595b633e01a90f75633c754b0fce960b1f53fda8ca1a319cd335911"
+    },
+    "seconds": 1086.0
+  },
+  "prediction_seal_sha256": "c847a1cd85ac5336de657afab8c008bc8f183d64d0776e016dc61f0af595a7f9",
+  "features_sha256": "16b463e18e61445213228f924f6188c30549897fd294cc7f76b6f38a7125667b",
+  "code_sha256": {
+    "scripts/analyze_plm.py": "0630ecaa7cfdd24ea33414a156d1ac7e47945abe9b991f3b97a6dbd13faa90d5",
+    "scripts/run_plm_evaluation.py": "e21b6ad4c154986790b17259ae809e159260fea1c429528aba1db319d3b30428",
+    "scripts/plm_build_features.py": "4b33a6fe123c0a3d1a947349b396afee3947b6df696cae8d7625ad487b40299e",
+    "src/hlpath/plm.py": "368e2328a5abf84dccdc2a423273182b386e1c655560b1c41ffdefedd43b81cf",
+    "src/hlpath/compare.py": "5da595059c8b50096dca4b754bd00891c32d80aec809476dea37d48a268379e4",
+    "src/hlpath/pipeline.py": "2061bcada91a970afc0dc468d6c195b303a4ee34d63b2387869158bb38c480fe",
+    "src/hlpath/analysis.py": "e10b87793d3b0e0b04b58b37f362ba0cb2af13e77386b9fd5bb9c51d1185b4df",
+    "src/hlpath/metrics.py": "9fee1f4e3dcbdbb5ddb9a8524c0da03d888929176bd8f59071d0de448c853ca8",
+    "kaggle/esm_score_kernel.py": "1151db9b7407925ad1e53dbb1f0d520fd11682a43a66e7b2e6222bca52db5011"
+  },
+  "outputs_sha256": {
+    "model_metrics.csv": "2e0f47bc33ff397abc64075d5a3b84d099ea9e41d8f416ee5fcb5cfa9acd2b08",
+    "contrasts.csv": "1377c4adfe5eb02b7133419eb0a1bf8c48e4c69054e3d0ad27782c994a32fae6",
+    "zero_shot_scored_missense.csv": "69f2953c78e8cd3231e2105ec5e577f63c3efb2776e32c505a13b56d7fe6ffe8",
+    "matched_fold_deltas.csv": "ce0ee6d3230b6b7bfffa9ae56d8900aee25a9c87e8b4b076654eda3ae4a76c92",
+    "summary.json": "60260d9abbaed5c1b269155fab13b39781da11c61329e6c73f0ef2d34a11d9f7"
+  }
+}

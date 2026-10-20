@@ -17,3 +17,6 @@ data/modeling_matrix.csv.gz -text -diff
 # those bytes and make Bundle() raise "Bundle integrity mismatch" for anyone
 # who clones the repo on Windows. Never touch this directory's bytes.
 predict/bundle/** -text -diff
+
+# Label-free PLM inputs and Kaggle ESM outputs are byte-pinned by SHA256 manifests.
+data/plm/**/*.gz -text -diff

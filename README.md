@@ -77,6 +77,22 @@ intervals exclude retraining and full CV dependence. Ablation differences are
 descriptive, without independent-fold significance claims.
 See [results](docs/results.md) and [validation status](docs/validation_status.md).
 
+## Protein language model extension
+
+A prespecified follow-up ([protocol](docs/plm_protocol.md) ·
+[results](docs/plm_results.md)) added zero-shot ESM-1v and ESM-2 650M
+masked-marginal scores for 1,328 missense variants. The splits and seeds were
+unchanged, and uncertainty comes from a paired gene-group bootstrap.
+
+- **Coding non-truncating subgroup (primary):** AUC rises from 0.823 to 0.988
+  (+0.165 [+0.067, +0.273]). A control model that only knows *whether* a
+  variant has a score reaches 0.985. The gain is therefore a
+  missense-versus-synonymous effect, not the ESM score.
+- **Within missense variants (secondary):** AUC rises from 0.967 to 0.984
+  (+0.017 [+0.005, +0.033]). This is a modest gain that the score itself adds.
+- **Zero-shot ESM-1v alone on missense:** AUC 0.875, below the 18 features'
+  0.967.
+
 ## Try the frozen prediction demo
 
 From the repository root, using Python 3.11 or later:

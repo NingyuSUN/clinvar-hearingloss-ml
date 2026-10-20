@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-10-20 — Prespecified protein language model extension (`PLM-ESM-2026-10`)
+
+- Froze `docs/plm_protocol.md` before scoring or fitting. It specifies:
+  - ESM-1v (five-model masked-marginal ensemble, primary) and ESM-2 650M
+    (sensitivity) scores for missense variants on the frozen cached transcript;
+  - six feature sets, including a scored-status control;
+  - the unchanged splits and seeds;
+  - one primary contrast, plus secondary and descriptive contrasts;
+  - a paired whole-gene-group bootstrap with a lower-bound-above-zero rule.
+- Added label-blind variant-to-protein mapping (`scripts/plm_map_variants.py`,
+  Ensembl release 116). It scores 1,328 variants with 0 reference mismatches.
+- Added a private Kaggle GPU scoring kernel (`kaggle/esm_score_kernel.py`) with
+  pinned Hugging Face revisions and weight, input and output SHA256 checks.
+- Added PLM feature, fitting and analysis scripts, plus `hlpath.plm` and
+  `hlpath.compare` (the paired bootstrap).
+- `pipeline.run_experiment` gained optional `feature_map` and `continuous`
+  arguments; the defaults are unchanged. A test checks identical output.
+- Results (`results/plm_esm_2026-10/`, `docs/plm_results.md`):
+  - The primary rule is met (+0.165 [+0.067, +0.273]).
+  - The gain is not attributable to the score beyond the scored-status
+    marker (+0.002 [−0.001, +0.007]).
+  - Within missense, ESM-1v adds +0.017 [+0.005, +0.033].
+  - Re-running ORIGINAL18 with this repository's pipeline does not exactly
+    reproduce the archived published predictions (subset AUC 0.8226 against
+    0.8148); this is reported, not adjusted.
+- One scoring run failed with a GPU out-of-memory error and is recorded in the
+  protocol's execution log.
+
 ## Unreleased — statistical reporting and project workflows
 
 - Require biological groups for conditional cluster-bootstrap intervals. Output
