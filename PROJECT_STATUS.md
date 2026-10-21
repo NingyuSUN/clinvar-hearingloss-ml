@@ -40,19 +40,44 @@ clarifies cohort terminology, metric aggregation, and unresolved validation issu
 - [ ] A dedicated AlphaGenome-only model. The closest things that exist today
       (`FULL_UNIFIED`, `FULL_STRATIFIED`) use a composite AVI score that also
       includes AlphaMissense and related signals.
-- [ ] Strict-missense-only re-evaluation of the coding non-truncating subset
-      (flagged as separate follow-on work in the 2026-09-11 stratification
-      commit; that commit's documentation changes were reverted 2026-09-18
-      pending author review — see `CHANGELOG.md`).
+- [x] Scored-missense-only training and matched evaluation in the exploratory
+      [four-arm follow-up](experiments/esm_missense_2x2/README.md), completed
+      2026-10-21. Coverage is 1,328 scored missense records, not all possible
+      missense variants; the earlier documentation history remains in `CHANGELOG.md`.
 - [ ] Audit the conservation feature's exact provenance and the ClinVar
       phenotype-condition mapping (open item in `docs/limitations.md`).
 - [x] Prespecified protein language model extension (`PLM-ESM-2026-10`,
       [protocol](docs/plm_protocol.md), [results](docs/plm_results.md)).
-      The primary gain on coding non-truncating variants comes from
-      missense-vs-synonymous status; within missense variants (1,328) ESM-1v
-      adds +0.017 AUC [+0.005, +0.033]. This also gives the first
-      strict-missense *evaluation* of the subset models; a missense-only
-      *training* run is still open.
+      Most of the primary mixed-cohort gain is reproduced by the scored-status
+      control; within scored missense variants (1,328), ESM-1v adds +0.017 AUC
+      [+0.005, +0.033]. The separate 2026-10-21 follow-up now also evaluates
+      missense-only training; the two runs use different validation targets.
+
+## Current experiment index — 2026-10-21 (Asia/Tokyo)
+
+- **Objective and phase:** completed internal exploratory analysis and public
+  research package for the ESM missense-training question.
+- **Inputs and code:** 3,121 mixed coding non-truncating records; evaluation on
+  1,328 scored missense records. Scientific base `d27ff142`; the
+  [protocol](experiments/esm_missense_2x2/PROTOCOL.md), pinned input hashes,
+  exact environment, release hashes and portable reproduction commands are in
+  the [experiment directory](experiments/esm_missense_2x2/README.md).
+- **Verified result:** missense-only Original18 + ESM versus Original18 has
+  AUC 0.986222 versus 0.976574, FN 128 versus 91 of 925 P/LP, and FP 8 versus
+  20 of 403 B/LB. Ranking improved while sensitivity fell at the chosen
+  operating rule. Training-scope comparisons are inconclusive.
+- **Evidence and limits:** aggregate results and independent arithmetic/model
+  replay audits are linked in the experiment directory. Narrow validation
+  gene diversity (40/50 subsets have two groups), conditional intervals and
+  same-cohort reuse limit inference; external and clinical validation are absent.
+- **Next step:** study score/threshold/voting behavior and threshold robustness
+  using an independently specified evaluation design; do not tune on these test labels.
+- **Git scope:** this package adds code, aggregate results and documentation
+  to the public repository. Raw per-variant OOF predictions, fitted models and
+  operational logs are not distributed. A remote configuration alone does not
+  establish push status; use the branch/PR commit shown by GitHub for the
+  published revision. This entry does not assert that a working checkout is
+  synchronized with a remote branch.
 
 ## Decision
 
@@ -75,14 +100,13 @@ intended to be used as, a clinical decision-support tool.
 - [x] Implement conditional gene-group intervals and descriptive paired comparisons.
 - [x] Execute and verify the frozen-prediction reanalysis (5 cohorts, 2,000
       gene-group draws each); see [statistical revision](docs/statistical_revision.md).
-- [ ] Add regression checks for live-source errors, REF validation, and
-      training/inference feature parity.
+- [ ] Expand the existing live-source and REF regression checks, and verify
+      broader training/inference feature parity.
 
 ## Optional future research
 
-- Strict missense-only re-training and evaluation (the raw counts for this
-  split already exist from the 2026-09-11 stratification work; only the
-  documentation change was reverted, not the underlying analysis).
+- Threshold robustness and score/threshold/voting decomposition after the
+  completed scored-missense-only training experiment.
 - Per-consequence-class operating points instead of a single global R90
   threshold.
 - Re-evaluation against a newer ClinVar release to check drift.

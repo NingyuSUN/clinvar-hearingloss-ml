@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "synthetic_cases": 54,
+  "claim": "For fixed validation scores, R90 equals largest threshold attaining >=90% positive recall. Negative scores do not affect threshold; negatives may affect upstream model/iteration selection.",
+  "scope": "synthetic mathematical/code check, no real fitting"
+}

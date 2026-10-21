@@ -1,0 +1,26 @@
+{
+  "source_sha256": "13c9a9dc56e3cd9897341b98a3b4ce773d03b83e70e183bbd3710df4a41db5d9",
+  "assignments": 50,
+  "inner_validation_two_groups": 40,
+  "two_group_validation_counts": {
+    "n": 170,
+    "P": 149,
+    "B": 21
+  },
+  "other_inner_validation_groups_range": [
+    17,
+    28
+  ],
+  "missense_inner_training_n_range": [
+    871,
+    916
+  ],
+  "missense_outer_test_groups_range": [
+    19,
+    39
+  ],
+  "same_group_identity_across_splits": "NOT VERIFIED; no identities in aggregate packet",
+  "preflight_checks_passed": true,
+  "trained_at_preflight": false,
+  "scope": "Aggregate pre-fit split-diversity verification; source_sha256 identifies the original preflight receipt."
+}

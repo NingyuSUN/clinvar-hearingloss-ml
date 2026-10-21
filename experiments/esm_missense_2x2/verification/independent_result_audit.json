@@ -1,0 +1,64 @@
+{
+  "checked_utc": "2026-10-21T01:41:33.136431+00:00",
+  "passed": true,
+  "predictions_sha256": "6f51bdd98596b8abdf14b3944b0dac9e08e0ab8a2461b3a8914717d072cf8e60",
+  "script_sha256": "b9657818efc67e6ebb4fb85dd06cddd6b11c1d5851afb395d94b6dd578ba1f3c",
+  "statistics_sha256": "eca45657e1a4eb8b257b2be1937e23dc811c792099ff766e9feaf885ddf7f7b8",
+  "checks": [
+    "53120 rows, matched identities and 10 predictions per variant/arm",
+    "full-precision threshold decisions and >=5 votes",
+    "four confusion matrices and sklearn AUCs",
+    "primary paired AUC CI against unchanged base implementation",
+    "primary decision CIs by explicit group-row replication",
+    "paired error rescues and new errors"
+  ],
+  "primary_comparison": {
+    "auc": {
+      "contrast": "D-C",
+      "role": "primary",
+      "metric": "auc",
+      "difference": 0.009647910938233473,
+      "ci95_low": 0.003683474892825378,
+      "ci95_high": 0.016475841131735704,
+      "interval_status": "available",
+      "valid_draws": 2000
+    },
+    "recall": {
+      "contrast": "D-C",
+      "role": "primary",
+      "metric": "recall",
+      "difference": -0.040000000000000036,
+      "ci95_low": -0.07887109024743882,
+      "ci95_high": -0.0081179870947062,
+      "interval_status": "available",
+      "valid_draws": 2000
+    },
+    "fpr": {
+      "contrast": "D-C",
+      "role": "primary",
+      "metric": "fpr",
+      "difference": -0.029776674937965264,
+      "ci95_low": -0.0565649692712906,
+      "ci95_high": -0.00982800982800983,
+      "interval_status": "available",
+      "valid_draws": 2000
+    },
+    "specificity": {
+      "contrast": "D-C",
+      "role": "primary",
+      "metric": "specificity",
+      "difference": 0.02977667493796532,
+      "ci95_low": 0.009828009828009906,
+      "ci95_high": 0.0565649692712905,
+      "interval_status": "available",
+      "valid_draws": 2000
+    }
+  },
+  "C_D_changes": {
+    "rescued_pathogenic": 30,
+    "new_pathogenic_misses": 67,
+    "removed_benign_false_positives": 12,
+    "new_benign_false_positives": 0
+  },
+  "limitations": "Verifies arithmetic and stored prediction integrity; training isolation requires separate split and fit audit."
+}

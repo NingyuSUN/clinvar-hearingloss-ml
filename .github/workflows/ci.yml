@@ -24,8 +24,28 @@ jobs:
         run: python -m pip install -r requirements.txt -r predict/requirements-inference.txt pytest requests
       - name: Run deterministic unit tests (includes predict/ regression tests)
         run: python -m pytest tests -q
+      - name: Check ESM four-arm experiment (synthetic data, no retraining)
+        env:
+          PYTHONPATH: src:experiments/esm_missense_2x2
+          OPENBLAS_NUM_THREADS: "1"
+          OMP_NUM_THREADS: "2"
+        run: python -m unittest discover -s experiments/esm_missense_2x2 -p 'test_*.py' -v
       - name: Validate public artifacts (no retraining)
         run: python tools/validate_public_artifacts.py
+      - name: Verify released ESM package bytes
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          root = Path("experiments/esm_missense_2x2")
+          manifest = json.loads((root / "PACKAGE_MANIFEST.json").read_text())
+          for item in manifest["files"]:
+              content = (root / item["file"]).read_bytes()
+              assert len(content) == item["bytes"], item["file"]
+              assert hashlib.sha256(content).hexdigest() == item["sha256"], item["file"]
+          print(f"verified {len(manifest['files'])} ESM package files")
+          PY
       - name: Run the predict CLI + report generator end to end
         run: make predict-demo
       - name: Check Python syntax without writing bytecode
@@ -39,6 +59,7 @@ jobs:
               + list(Path("tools").rglob("*.py"))
               + list(Path("tests").rglob("*.py"))
               + list(Path("predict").rglob("*.py"))
+              + list(Path("experiments").rglob("*.py"))
           )
           for path in files:
               ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
