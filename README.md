@@ -3,11 +3,16 @@
 [![Repository checks](https://github.com/NingyuSUN/clinvar-hearingloss-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/NingyuSUN/clinvar-hearingloss-ml/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+## Authors
+
+Ningyu SUN and Max CAO
+
+Max CAO: [@Max-Cao-0105](https://github.com/Max-Cao-0105).
+
 ## Project evidence at a glance
 
-**Authors:** Ningyu Sun (project lead) and Max Cao
-([@Max-Cao-0105](https://github.com/Max-Cao-0105)). The project covers research design,
-data preparation, model evaluation, statistical review and research software delivery.
+The project covers research design, data preparation, model evaluation,
+statistical review and research software delivery.
 
 - **Study:** 7,125 ClinVar variants across 167 gene groups; gene-held-out AUC
   **0.930 [conditional 95% interval: 0.892, 0.974]**.
