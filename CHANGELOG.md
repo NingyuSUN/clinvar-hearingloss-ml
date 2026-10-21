@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-10-21 — Exploratory matched missense-training ESM comparison
+
+- Add four arms crossing mixed versus scored-missense-only downstream training
+  with Original18 versus Original18 + frozen ESM-1v. All use the same scored
+  missense validation and test targets; 200 new XGBoost fits.
+- Publish portable source, 32 synthetic tests, pinned environment/input hashes,
+  aggregate results and independent audit evidence in `experiments/esm_missense_2x2/`.
+- On 1,328 scored records, the missense-only ESM contrast improves AUC by
+  0.009648 [0.003683, 0.016476] but raises FN from 91 to 128 of 925 P/LP and
+  lowers FP from 20 to 8 of 403 B/LB under the validation-selected R90/voting rule.
+- Disclose narrow validation gene diversity, conditional interval scope,
+  exploratory design and inconclusive training-scope contrasts. Preserve the
+  earlier analysis and avoid subtracting estimates across validation protocols.
+- Correct the historical interpretation: restricting evaluation to scored
+  missense does not remove availability effects learned during mixed training.
+  The new missense-only C/D training contrast addresses this distinction.
+- Remove operational paths and administration from the publication package;
+  preserve numerical results and executable Python statements. Original and
+  released source hashes are distinguished in the package manifest.
+
 ## 2026-10-20 — Prespecified protein language model extension (`PLM-ESM-2026-10`)
 
 - Froze `docs/plm_protocol.md` before scoring or fitting. It specifies:

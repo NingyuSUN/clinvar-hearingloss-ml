@@ -1,0 +1,200 @@
+{
+  "arms": {
+    "A": {
+      "features": [
+        "p1_has_frameshift",
+        "p1_has_stop_gained",
+        "p1_has_canonical_splice",
+        "p1_has_splice_region",
+        "variant_length",
+        "has_del",
+        "has_ins",
+        "has_dup",
+        "ensembl_conservation",
+        "p3_gene_constraint_oe_lof_upper",
+        "p3_gene_constraint_oe_mis_upper",
+        "p4_freq_log10",
+        "p2_af_known_missing",
+        "p2_not_observed_in_gnomad_r4",
+        "p2_low_an_flag",
+        "p3_in_specific_domain",
+        "p3_specific_domain_count",
+        "p3_variant_is_coding"
+      ],
+      "training": "mixed"
+    },
+    "B": {
+      "features": [
+        "p1_has_frameshift",
+        "p1_has_stop_gained",
+        "p1_has_canonical_splice",
+        "p1_has_splice_region",
+        "variant_length",
+        "has_del",
+        "has_ins",
+        "has_dup",
+        "ensembl_conservation",
+        "p3_gene_constraint_oe_lof_upper",
+        "p3_gene_constraint_oe_mis_upper",
+        "p4_freq_log10",
+        "p2_af_known_missing",
+        "p2_not_observed_in_gnomad_r4",
+        "p2_low_an_flag",
+        "p3_in_specific_domain",
+        "p3_specific_domain_count",
+        "p3_variant_is_coding",
+        "esm1v_llr"
+      ],
+      "training": "mixed"
+    },
+    "C": {
+      "features": [
+        "p1_has_frameshift",
+        "p1_has_stop_gained",
+        "p1_has_canonical_splice",
+        "p1_has_splice_region",
+        "variant_length",
+        "has_del",
+        "has_ins",
+        "has_dup",
+        "ensembl_conservation",
+        "p3_gene_constraint_oe_lof_upper",
+        "p3_gene_constraint_oe_mis_upper",
+        "p4_freq_log10",
+        "p2_af_known_missing",
+        "p2_not_observed_in_gnomad_r4",
+        "p2_low_an_flag",
+        "p3_in_specific_domain",
+        "p3_specific_domain_count",
+        "p3_variant_is_coding"
+      ],
+      "training": "scored_missense"
+    },
+    "D": {
+      "features": [
+        "p1_has_frameshift",
+        "p1_has_stop_gained",
+        "p1_has_canonical_splice",
+        "p1_has_splice_region",
+        "variant_length",
+        "has_del",
+        "has_ins",
+        "has_dup",
+        "ensembl_conservation",
+        "p3_gene_constraint_oe_lof_upper",
+        "p3_gene_constraint_oe_mis_upper",
+        "p4_freq_log10",
+        "p2_af_known_missing",
+        "p2_not_observed_in_gnomad_r4",
+        "p2_low_an_flag",
+        "p3_in_specific_domain",
+        "p3_specific_domain_count",
+        "p3_variant_is_coding",
+        "esm1v_llr"
+      ],
+      "training": "scored_missense"
+    }
+  },
+  "code_sha256": {
+    "fit_core": "a5e946869e65c432962061fa4c88dbc8fb2c4ea9f425ccc4f388420c92a2ca0f",
+    "hlpath.config": "5f11758b62987d68bc8d551ae7eb6f0ac6e10dc5c2f0d4e0a6f8ede19097420d",
+    "hlpath.features": "97c4d55fefd25dedbaf8edc53fbd893c85cfbcc143b7982155046e23c12335e3",
+    "hlpath.metrics": "9fee1f4e3dcbdbb5ddb9a8524c0da03d888929176bd8f59071d0de448c853ca8",
+    "hlpath.pipeline": "2061bcada91a970afc0dc468d6c195b303a4ee34d63b2387869158bb38c480fe",
+    "hlpath.plm": "368e2328a5abf84dccdc2a423273182b386e1c655560b1c41ffdefedd43b81cf",
+    "hlpath.protocol": "9c7060ef0502392b9434c8200d39e49d5d96d64bd408cff9eb9f35b4535cc638",
+    "run_missense_2x2.py": "60f975e1312dfde84dd0fa042bc9c455f404c04a863eb27103317aafd9f6c4f7"
+  },
+  "cohort_counts": {
+    "missense": {
+      "gene_groups": 135,
+      "n": 1328,
+      "negative": 403,
+      "positive": 925
+    },
+    "mixed": {
+      "gene_groups": 148,
+      "n": 3121,
+      "negative": 2132,
+      "positive": 989
+    }
+  },
+  "config": {
+    "inner_valid_fraction": 0.2,
+    "k_outer": 5,
+    "num_boost_round": 700,
+    "posthoc_min_iter": 10,
+    "refit": false,
+    "seeds": [
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110
+    ],
+    "target_recall": 0.9,
+    "threads": 10,
+    "validation_population": "scored_missense",
+    "xgb_params_seed101": {
+      "colsample_bytree": 0.9,
+      "eta": 0.03,
+      "eval_metric": [
+        "auc",
+        "logloss"
+      ],
+      "lambda": 1.0,
+      "max_depth": 5,
+      "min_child_weight": 1,
+      "nthread": 10,
+      "objective": "binary:logistic",
+      "seed": 101,
+      "subsample": 0.9,
+      "tree_method": "hist"
+    }
+  },
+  "created_utc": "2026-10-21T01:33:55.062163+00:00",
+  "inputs_sha256": {
+    "matrix": "225fbf1c5060baadd157149b2c43424614a0fd88550ce22ecc6920e3ca17aceb",
+    "plm_features": "16b463e18e61445213228f924f6188c30549897fd294cc7f76b6f38a7125667b"
+  },
+  "protocol": "ESM-MISSENSE-2X2-20261021",
+  "source_commit": "d27ff142fed63a110114f8efa928cdd26bedd2df",
+  "split_manifest_sha256": "be226e6e7ac5b7f18170eecd2c7e8b530b3a8f7edcb59b17cb22e09babf364d1",
+  "versions": {
+    "numpy": "2.5.3",
+    "pandas": "3.0.1",
+    "python": "3.12.14",
+    "scikit-learn": "1.7.2",
+    "scipy": "1.18.1",
+    "xgboost": "3.4.1"
+  },
+  "scope": "Scientific configuration and provenance from the original pre-fit manifest; not a runnable replacement for that manifest.",
+  "original_frozen_manifest_sha256": "2f01d6b5ae3a51358dc7e7bceee546d0c1a24fb70be66290782f909f1837d1b1",
+  "original_protocol_sha256": "327d162a8b5336cebe741c2cc8c2c8fa6c7cc5c23c093c9870e003d80b65d6db",
+  "omitted_original_manifest_fields": [
+    "inner_assignments",
+    "outer_assignments"
+  ],
+  "omission_reason": "Full group assignments remain in the original run; the split hash, deterministic recipe and aggregate diversity evidence are retained.",
+  "historical_hash_binding": "code_sha256 identifies the original execution source. Six released module docstrings changed; PACKAGE_MANIFEST.json records both original and public file hashes. A fresh prepare binds reruns to released files.",
+  "input_paths": {
+    "matrix": "data/modeling_matrix.csv.gz",
+    "plm_features": "data/plm/plm_features.csv"
+  },
+  "released_code_sha256": {
+    "fit_core.py": "a5e946869e65c432962061fa4c88dbc8fb2c4ea9f425ccc4f388420c92a2ca0f",
+    "run_missense_2x2.py": "ee47fcb38b799f3e083fe64cc148914bb77971d25f929d2eed5c80d11c42306f",
+    "test_missense_2x2.py": "d5c5e3026ac0e539cf6cdadd4c3a73ccc89af7a4a106d82ea4277fa29e89bd32",
+    "analysis.py": "4056b7d51d5df6b04b52eb7fa2adf9649f7f92ff59cef9fc02e4718d24ea6341",
+    "audit_fit_artifacts.py": "29e7578ce00d5352562d5fb6ce3ffb357efa34ed22a395982de41ed5e143cf8b",
+    "test_analysis.py": "d1c14e55c8aee11f3490cb3df7b4e5b4ca7e132807f3c873753ef15fcd9c4a7c",
+    "test_audit_fit_artifacts.py": "8197fc89b845f8908e621f9aa3a143da46818e1876bb55a25b486a3b5cef5d8b",
+    "audit_results.py": "b9657818efc67e6ebb4fb85dd06cddd6b11c1d5851afb395d94b6dd578ba1f3c",
+    "summarize_seed_stability.py": "04d542ddaa092cfb4b5f3c57d402920fae7b640092bb861cedcee56f1011693a"
+  }
+}

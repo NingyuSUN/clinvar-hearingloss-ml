@@ -27,6 +27,23 @@ The revised intervals condition on saved predictions. They do not estimate
 retraining, model-selection or full new-cohort uncertainty, and they do not
 remove every dependence induced by overlapping CV training sets.
 
+## Exploratory ESM missense-training follow-up
+
+The [2026-10-21 four-arm experiment](../experiments/esm_missense_2x2/README.md)
+compares all arms on the same 1,328 scored missense variants, with newly fitted
+mixed-training controls and a common missense-only inner validation target.
+After missense-only training, adding ESM improves AUC by 0.009648 but increases
+FN from 91 to 128 of 925 P/LP, while FP decreases from 20 to 8 of 403 B/LB.
+Ranking and the validation-threshold voting decision are different summaries.
+These results do not establish poorer probability calibration or a unique
+threshold mechanism. Training-scope contrasts are inconclusive, not equivalent.
+
+The experiment's 32 synthetic tests and independent saved-model/arithmetic
+audits check implementation and result consistency. They do not supply external
+validation. Forty of fifty inner validation subsets contain only two missense
+gene groups. Conditional gene-group intervals omit retraining and threshold
+selection, and the post hoc study reuses the original ClinVar cohort.
+
 ## Research boundaries
 
 - Probability calibration and independent external validation are outside the

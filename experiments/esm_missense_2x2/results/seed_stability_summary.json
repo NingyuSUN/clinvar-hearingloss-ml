@@ -1,0 +1,171 @@
+{
+  "scope": "Descriptive stability across ten reused-cohort splits; not ten independent data sets",
+  "arms": {
+    "A": {
+      "auc": {
+        "min": 0.9655837971967004,
+        "max": 0.9744403460532493
+      },
+      "FN": {
+        "min": 92.0,
+        "max": 125.0
+      },
+      "FP": {
+        "min": 18.0,
+        "max": 27.0
+      },
+      "recall": {
+        "min": 0.8648648648648649,
+        "max": 0.9005405405405406
+      }
+    },
+    "B": {
+      "auc": {
+        "min": 0.9804158004158005,
+        "max": 0.9861042183622828
+      },
+      "FN": {
+        "min": 115.0,
+        "max": 154.0
+      },
+      "FP": {
+        "min": 7.0,
+        "max": 14.0
+      },
+      "recall": {
+        "min": 0.8335135135135135,
+        "max": 0.8756756756756757
+      }
+    },
+    "C": {
+      "auc": {
+        "min": 0.972005901683321,
+        "max": 0.976952585339682
+      },
+      "FN": {
+        "min": 91.0,
+        "max": 118.0
+      },
+      "FP": {
+        "min": 16.0,
+        "max": 24.0
+      },
+      "recall": {
+        "min": 0.8724324324324324,
+        "max": 0.9016216216216216
+      }
+    },
+    "D": {
+      "auc": {
+        "min": 0.981765139829656,
+        "max": 0.9886794983569176
+      },
+      "FN": {
+        "min": 118.0,
+        "max": 155.0
+      },
+      "FP": {
+        "min": 6.0,
+        "max": 13.0
+      },
+      "recall": {
+        "min": 0.8324324324324325,
+        "max": 0.8724324324324324
+      }
+    }
+  },
+  "contrasts": {
+    "B-A": {
+      "auc": {
+        "min": 0.0094815907719133,
+        "max": 0.0170183086312117,
+        "positive_seeds": 10,
+        "negative_seeds": 0,
+        "zero_seeds": 0
+      },
+      "recall": {
+        "min": -0.0497297297297297,
+        "max": -0.0162162162162161,
+        "positive_seeds": 0,
+        "negative_seeds": 10,
+        "zero_seeds": 0
+      },
+      "fpr": {
+        "min": -0.0446650124069478,
+        "max": -0.0198511166253101,
+        "positive_seeds": 0,
+        "negative_seeds": 10,
+        "zero_seeds": 0
+      }
+    },
+    "C-A": {
+      "auc": {
+        "min": 0.0006652806652807,
+        "max": 0.0079659311917377,
+        "positive_seeds": 10,
+        "negative_seeds": 0,
+        "zero_seeds": 0
+      },
+      "recall": {
+        "min": -0.014054054054054,
+        "max": 0.0227027027027026,
+        "positive_seeds": 6,
+        "negative_seeds": 3,
+        "zero_seeds": 1
+      },
+      "fpr": {
+        "min": -0.0148883374689826,
+        "max": 0.0024813895781637,
+        "positive_seeds": 1,
+        "negative_seeds": 9,
+        "zero_seeds": 0
+      }
+    },
+    "D-B": {
+      "auc": {
+        "min": -0.0029253571189055,
+        "max": 0.0062839514452417,
+        "positive_seeds": 8,
+        "negative_seeds": 2,
+        "zero_seeds": 0
+      },
+      "recall": {
+        "min": -0.0162162162162161,
+        "max": 0.0248648648648648,
+        "positive_seeds": 3,
+        "negative_seeds": 7,
+        "zero_seeds": 0
+      },
+      "fpr": {
+        "min": -0.0049627791563275,
+        "max": 0.0,
+        "positive_seeds": 0,
+        "negative_seeds": 8,
+        "zero_seeds": 2
+      }
+    },
+    "D-C": {
+      "auc": {
+        "min": 0.0064784387365032,
+        "max": 0.0117269130172356,
+        "positive_seeds": 10,
+        "negative_seeds": 0,
+        "zero_seeds": 0
+      },
+      "recall": {
+        "min": -0.0497297297297297,
+        "max": -0.0140540540540541,
+        "positive_seeds": 0,
+        "negative_seeds": 10,
+        "zero_seeds": 0
+      },
+      "fpr": {
+        "min": -0.0372208436724565,
+        "max": -0.0148883374689826,
+        "positive_seeds": 0,
+        "negative_seeds": 10,
+        "zero_seeds": 0
+      }
+    }
+  }
+}

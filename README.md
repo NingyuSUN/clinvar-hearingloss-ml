@@ -86,12 +86,44 @@ unchanged, and uncertainty comes from a paired gene-group bootstrap.
 
 - **Coding non-truncating subgroup (primary):** AUC rises from 0.823 to 0.988
   (+0.165 [+0.067, +0.273]). A control model that only knows *whether* a
-  variant has a score reaches 0.985. The gain is therefore a
-  missense-versus-synonymous effect, not the ESM score.
+  variant has a score reaches 0.985. Most of the overall gain is reproduced
+  by this scored-status control; an additional gain beyond the control is not
+  demonstrated. Score availability also separates consequence classes.
 - **Within missense variants (secondary):** AUC rises from 0.967 to 0.984
-  (+0.017 [+0.005, +0.033]). This is a modest gain that the score itself adds.
+  (+0.017 [+0.005, +0.033]). Training remained mixed, so this historical
+  comparison does not isolate the score increment beyond availability.
 - **Zero-shot ESM-1v alone on missense:** AUC 0.875, below the 18 features'
   0.967.
+
+### Missense-only training follow-up (2026-10-21)
+
+An [exploratory four-arm experiment](experiments/esm_missense_2x2/README.md)
+compares mixed coding non-truncating versus scored-missense-only training,
+with and without ESM-1v. All arms are evaluated on the same **1,328 scored
+missense records (925 P/LP, 403 B/LB; 135 gene groups)**, and share the same
+missense validation target. ESM-1v is frozen; the downstream XGBoost models
+are newly fitted.
+
+| Training population | Features | AUC | Missed P/LP / 925 | False-positive B/LB / 403 |
+|---|---|---:|---:|---:|
+| Mixed coding non-truncating | Original18 | 0.972353 | 80 | 24 |
+| Mixed coding non-truncating | Original18 + ESM-1v | 0.984591 | 130 | 9 |
+| Scored missense only | Original18 | 0.976574 | 91 | 20 |
+| Scored missense only | Original18 + ESM-1v | 0.986222 | 128 | 8 |
+
+After missense-only training, ESM improves AUC by **0.009648** (conditional
+95% interval **0.003683 to 0.016476**), while recall falls by **4.0 percentage
+points** (interval **−7.887 to −0.812**). There are 37 more false negatives
+and 12 fewer false positives under the validation-selected R90/voting rule.
+AUC measures ranking; it does not guarantee fewer misses at a selected threshold.
+Neither training-scope comparison establishes that missense-only training is
+better than mixed training, and neither establishes equivalence.
+
+This follow-up is exploratory: 40/50 inner validation subsets contain only two
+missense gene groups. Intervals condition on fixed fitted predictions and omit
+retraining and threshold-selection uncertainty. The common missense validation
+target differs from the historical analysis above, so the new controls must not
+be substituted into its contrasts. No external or clinical validation is claimed.
 
 ## Try the frozen prediction demo
 
@@ -165,7 +197,8 @@ to assign ClinVar labels. Conservation provenance remains unresolved. The
 and has no independent external validation; the frozen demo is the review entrypoint.
 
 Probability calibration and independent external validation remain research
-boundaries. Strict-missense evaluation and robustness work are tracked in [project status](PROJECT_STATUS.md).
+boundaries. The completed missense follow-up and remaining threshold-robustness
+work are indexed in [project status](PROJECT_STATUS.md).
 [Engineering case study](docs/engineering_case_study.md) · [Model card](MODEL_CARD.md) · [Limitations](docs/limitations.md) ·
 [SHAP analysis](docs/shap.md) · [CI checks](.github/workflows/ci.yml)
 
